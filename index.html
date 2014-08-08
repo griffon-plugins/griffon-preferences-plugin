@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.0.preview.7">
+<meta name="author" content="Andres Almiray">
+<title>Griffon Preferences Plugin</title>
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+<link rel="stylesheet" href="./coderay-asciidoctor.css">
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Griffon Preferences Plugin</h1>
+<span id="author" class="author">Andres Almiray</span><br>
+<span id="revnumber">version 1.0.0-SNAPSHOT</span>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_configuration">2. Build Configuration</a></li>
+<li>
+<ul class="sectlevel2">
+<li><a href="#_gradle">2.1. Gradle</a></li>
+<li>
+<ul class="sectlevel3">
+<li><a href="#_automatic">2.1.1. Automatic</a></li>
+<li><a href="#_manual">2.1.2. Manual</a></li>
+</ul>
+</li>
+<li><a href="#_maven">2.2. Maven</a></li>
+</ul>
+</li>
+<li><a href="#_modules">3. Modules</a></li>
+<li>
+<ul class="sectlevel2">
+<li><a href="#_preferences">3.1. Preferences</a></li>
+<li><a href="#_preferences_json">3.2. Preferences JSON</a></li>
+</ul>
+</li>
+<li><a href="#_links">4. Links</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>Preferences</code> are represented by a tree of nodes. Each node has a name (may not
+be unique) and a path (always unique). The root node has "/" as name and path.
+No other node may have the character <em>/</em> in its name. Nodes may contain
+key-value entries.</p>
+</div>
+<div class="paragraph">
+<p><code>Preferences</code> trigger events whenever a node changes value or nodes are
+added/removed. You may register a <code>griffon.plugins.preferences.PreferenceChangeListener</code>
+to handle the first type of event, and a <code>griffon.plugins.preferences.NodeChangeListener</code>
+to handle the second one.</p>
+</div>
+<div class="paragraph">
+<p><code>Preferences</code> may be resolved at any time given a <code>PreferencesManager</code>; this
+plugin will automatically instantiate a manager given the default configuration.
+Preference  values may also be injected following a naming convention. Classes
+that participate in preferences injection have their properties annotated with
+<code>@Preference</code>. Only classes annotated with <code>@PreferencesAware</code> will be notified
+of updates whenever preferences change value. The <code>@Preference</code> annotation
+defines additional parameters such as <code>key</code>, <code>args</code>, <code>defaultValue</code> and <code>format</code>;
+these parameters work exactly as shown by <code>@InjectedResource</code>.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s an example of a Model class defining a preference for a title and a custom
+format for a Date property</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="groovy language-groovy"><span class="line-numbers"> 1</span><span class="keyword">package</span> sample
+<span class="line-numbers"> 2</span>
+<span class="line-numbers"> 3</span><span class="keyword">import</span> <span class="include">griffon.core.artifact.GriffonModel</span>
+<span class="line-numbers"> 4</span><span class="keyword">import</span> <span class="include">griffon.metadata.ArtifactProviderFor</span>
+<span class="line-numbers"> 5</span><span class="keyword">import</span> <span class="include">griffon.plugins.preferences.Preference</span>
+<span class="line-numbers"> 6</span><span class="keyword">import</span> <span class="include">griffon.plugins.preferences.PreferencesAware</span>
+<span class="line-numbers"> 7</span>
+<span class="line-numbers"> 8</span><span class="annotation">@griffon</span>.transform.Observable
+<span class="line-numbers"> 9</span><span class="annotation">@PreferencesAware</span>
+<span class="line-numbers"><strong>10</strong></span><span class="annotation">@ArtifactProviderFor</span>(GriffonModel)
+<span class="line-numbers">11</span><span class="type">class</span> <span class="class">SampleModel</span> {
+<span class="line-numbers">12</span>    <span class="annotation">@Preference</span>(defaultValue=<span class="string"><span class="delimiter">'</span><span class="content">Sample</span><span class="delimiter">'</span></span>)
+<span class="line-numbers">13</span>    <span class="predefined-type">String</span> title
+<span class="line-numbers">14</span>
+<span class="line-numbers">15</span>    <span class="annotation">@Preference</span>(defaultValue=<span class="string"><span class="delimiter">'</span><span class="content">08.04.2013 2:30 PM</span><span class="delimiter">'</span></span>, format=<span class="string"><span class="delimiter">'</span><span class="content">dd.MM.yyyy h:mm a</span><span class="delimiter">'</span></span>)
+<span class="line-numbers">16</span>    <span class="predefined-type">Date</span> date
+<span class="line-numbers">17</span>
+<span class="line-numbers">18</span>    <span class="directive">private</span> <span class="predefined-type">String</span> isbn
+<span class="line-numbers">19</span>
+<span class="line-numbers"><strong>20</strong></span>    <span class="annotation">@Preference</span>(defaultValue=<span class="string"><span class="delimiter">'</span><span class="content">9781935182238</span><span class="delimiter">'</span></span>)
+<span class="line-numbers">21</span>    <span class="type">void</span> setIsbn(<span class="predefined-type">String</span> isbn) { <span class="local-variable">this</span>.isbn = isbn }
+<span class="line-numbers">22</span>    <span class="predefined-type">String</span> getIsbn() { <span class="local-variable">this</span>.isbn }
+<span class="line-numbers">23</span>}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the application is run for the first the <code>title</code> property will have "Sample"
+as its value. Preferences will be written to disk when the application is shutdown.
+Here are the contents of the <code>default.json</code> file (JSON support is enabled if the
+<code>griffon-preferences-json</code> dependency is added to the classpath)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="json language-json"><span class="line-numbers"> 1</span>{
+<span class="line-numbers"> 2</span>    <span class="key"><span class="delimiter">&quot;</span><span class="content">sample</span><span class="delimiter">&quot;</span></span>: {
+<span class="line-numbers"> 3</span>        <span class="key"><span class="delimiter">&quot;</span><span class="content">SampleModel</span><span class="delimiter">&quot;</span></span>: {
+<span class="line-numbers"> 4</span>           <span class="key"><span class="delimiter">&quot;</span><span class="content">isbn</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">9781935182238</span><span class="delimiter">&quot;</span></span>,
+<span class="line-numbers"> 5</span>            <span class="key"><span class="delimiter">&quot;</span><span class="content">title</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Sample</span><span class="delimiter">&quot;</span></span>,
+<span class="line-numbers"> 6</span>            <span class="key"><span class="delimiter">&quot;</span><span class="content">date</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">08.04.2013 2:30 PM</span><span class="delimiter">&quot;</span></span>
+<span class="line-numbers"> 7</span>        }
+<span class="line-numbers"> 8</span>    }
+<span class="line-numbers"> 9</span>}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If that file is edited so that the title property has a different value then the
+new value will be shown the next time the application is launched.</p>
+</div>
+<div class="paragraph">
+<p>It&#8217;s worth noting that if a preference cannot be resolved a
+<code>griffon.plugins.preferences.NoSuchPreferenceException</code> is thrown.</p>
+</div>
+<div class="paragraph">
+<p>The <code>@Preference</code> annotation may be applied to methods too, as long as the method
+represents a property getter or setter. Both read and write methods must exist.
+The annotation may be applied to any of the property accessors. The setter has
+precedence in the event of both accessors being annotated.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration"><a class="anchor" href="#_configuration"></a>2. Build Configuration</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_gradle"><a class="anchor" href="#_gradle"></a>2.1. Gradle</h3>
+<div class="paragraph">
+<p>You have two options for configuring this plugin: automatic and manual.</p>
+</div>
+<div class="sect3">
+<h4 id="_automatic"><a class="anchor" href="#_automatic"></a>2.1.1. Automatic</h4>
+<div class="paragraph">
+<p>As long as the project has the <code>org.codehaus.griffon.griffon</code> plugin applied to it you
+may include the following snippet in <code>build.gradle</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="groovy language-groovy">dependencies {
+    griffon 'org.codehaus.griffon.plugins:griffon-preferences-plugin:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>griffon</code> plugin will take care of the rest given its configuration.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_manual"><a class="anchor" href="#_manual"></a>2.1.2. Manual</h4>
+<div class="paragraph">
+<p>You will need to configure any of the following blocks depending on your setup</p>
+</div>
+<div class="listingblock">
+<div class="title">Core Support</div>
+<div class="content">
+<pre class="CodeRay nowrap"><code class="groovy language-groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-core:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">JSON Support</div>
+<div class="content">
+<pre class="CodeRay nowrap"><code class="groovy language-groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-json:1.0.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_maven"><a class="anchor" href="#_maven"></a>2.2. Maven</h3>
+<div class="paragraph">
+<p>First configure the <code>griffon-preferences-plugin</code> BOM in your POM file, by placing the following
+snippet before the <code>&lt;build&gt;</code> element</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="xml language-xml"><span class="tag">&lt;dependencyManagement&gt;</span>
+    <span class="tag">&lt;dependencies&gt;</span>
+        <span class="tag">&lt;dependency&gt;</span>
+            <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+            <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-plugin<span class="tag">&lt;/artifactId&gt;</span>
+            <span class="tag">&lt;version&gt;</span>1.0.0-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+            <span class="tag">&lt;type&gt;</span>pom<span class="tag">&lt;/type&gt;</span>
+            <span class="tag">&lt;scope&gt;</span>import<span class="tag">&lt;/scope&gt;</span>
+        <span class="tag">&lt;/dependency&gt;</span>
+    <span class="tag">&lt;/dependencies&gt;</span>
+<span class="tag">&lt;/dependencyManagement&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next configure dependencies as required by your particular setup</p>
+</div>
+<div class="listingblock">
+<div class="title">Core Support</div>
+<div class="content">
+<pre class="CodeRay nowrap"><code class="xml language-xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-core<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">JSON Support</div>
+<div class="content">
+<pre class="CodeRay nowrap"><code class="xml language-xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-json<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_modules"><a class="anchor" href="#_modules"></a>3. Modules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following sections display all bindings per module. Use this information to
+successfully override a binding on your own modules or to troubleshoot a module
+binding if the wrong type has been applied by the Griffon runtime.</p>
+</div>
+<div class="sect2">
+<h3 id="_preferences"><a class="anchor" href="#_preferences"></a>3.1. Preferences</h3>
+<div class="paragraph">
+<p>Module name: <code>preferences</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="java language-java">bind(PreferencesManager.class)
+    .to(DefaultPreferencesManager.class)
+    .asSingleton();
+
+bind(PreferencesPersistor.class)
+    .to(SerializingPreferencesPersistor.class)
+    .asSingleton();
+
+bind(GriffonAddon.class)
+    .to(PreferencesAddon.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_preferences_json"><a class="anchor" href="#_preferences_json"></a>3.2. Preferences JSON</h3>
+<div class="paragraph">
+<p>Module name: <code>preferences-json</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>preferences</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay nowrap"><code class="java language-java">bind(PreferencesPersistor.class)
+    .to(JsonPreferencesPersistor.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_links"><a class="anchor" href="#_links"></a>4. Links</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="api/index.html" target="_blank">Javadoc</a></p>
+</div>
+<div class="paragraph">
+<p><a href="api-src/index.html" target="_blank">API Sources</a></p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0.0-SNAPSHOT<br>
+Last updated 2014-08-04 10:26:20 CEST
+</div>
+</div>
+</body>
+</html>
