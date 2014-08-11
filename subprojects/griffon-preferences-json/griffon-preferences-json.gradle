@@ -1,0 +1,19 @@
+apply plugin: 'groovy'
+apply from: rootProject.file('gradle/code-coverage.gradle')
+
+dependencies {
+    compileOnly "org.codehaus.griffon:griffon-core-compile:${griffonVersion}"
+
+    compile 'org.json:json:20140107'
+    compile project (':griffon-preferences-core')
+
+    testCompileOnly "org.codehaus.griffon:griffon-groovy-compile:${griffonVersion}"
+
+    testCompile "org.codehaus.griffon:griffon-core-test:${griffonVersion}"
+    testCompile "org.codehaus.griffon:griffon-groovy:${griffonVersion}"
+
+    testRuntime "org.codehaus.griffon:griffon-guice:${griffonVersion}"
+    testRuntime 'org.slf4j:slf4j-simple:1.7.7'
+}
+
+compileGroovy.enabled = false

@@ -1,0 +1,2 @@
+
+:link_jdk_preferences: link:http://docs.oracle.com/javase/7/docs/api/java/util/prefs/Preferences.html[java.util.prefs.Preferences, window="_blank"]
