@@ -12,7 +12,7 @@ binding if the wrong type has been applied by the Griffon runtime.
 
 == Preferences
 
-Module name: +preferences+
+Module name: `preferences`
 
 [source,java,options="nowrap"]
 ----
@@ -21,9 +21,9 @@ include::{subproject-base}core{java-source}{package-base}/PreferencesModule.java
 
 == Preferences JSON
 
-Module name: +preferences-json+
+Module name: `preferences-json`
 
-Depends on: +preferences+
+Depends on: `preferences`
 
 [source,java,options="nowrap"]
 ----

@@ -2,24 +2,24 @@
 [[_introduction]]
 = Introduction
 
-+Preferences+ are represented by a tree of nodes. Each node has a name (may not
+`Preferences` are represented by a tree of nodes. Each node has a name (may not
 be unique) and a path (always unique). The root node has "/" as name and path.
 No other node may have the character '/' in its name. Nodes may contain
 key-value entries.
 
-+Preferences+ trigger events whenever a node changes value or nodes are
-added/removed. You may register a +griffon.plugins.preferences.PreferenceChangeListener+
-to handle the first type of event, and a +griffon.plugins.preferences.NodeChangeListener+
+`Preferences` trigger events whenever a node changes value or nodes are
+added/removed. You may register a `griffon.plugins.preferences.PreferenceChangeListener`
+to handle the first type of event, and a `griffon.plugins.preferences.NodeChangeListener`
 to handle the second one.
 
-+Preferences+ may be resolved at any time given a +PreferencesManager+; this
+`Preferences` may be resolved at any time given a `PreferencesManager`; this
 plugin will automatically instantiate a manager given the default configuration.
 Preference  values may also be injected following a naming convention. Classes
 that participate in preferences injection have their properties annotated with
-+@Preference+. Only classes annotated with +@PreferencesAware+ will be notified
-of updates whenever preferences change value. The +@Preference+ annotation
-defines additional parameters such as +key+, +args+, +defaultValue+ and +format+;
-these parameters work exactly as shown by +@InjectedResource+.
+`@Preference`. Only classes annotated with `@PreferencesAware` will be notified
+of updates whenever preferences change value. The `@Preference` annotation
+defines additional parameters such as `key`, `args`, `defaultValue` and `format`;
+these parameters work exactly as shown by `@InjectedResource`.
 
 Here's an example of a Model class defining a preference for a title and a custom
 format for a Date property
@@ -51,10 +51,10 @@ class SampleModel {
 }
 ----
 
-When the application is run for the first the +title+ property will have "Sample"
+When the application is run for the first the `title` property will have "Sample"
 as its value. Preferences will be written to disk when the application is shutdown.
-Here are the contents of the +default.json+ file (JSON support is enabled if the
-+griffon-preferences-json+ dependency is added to the classpath)
+Here are the contents of the `default.json` file (JSON support is enabled if the
+`griffon-preferences-json` dependency is added to the classpath)
 
 [source,json,linenumbers,options="nowrap"]
 ----
@@ -73,9 +73,9 @@ If that file is edited so that the title property has a different value then the
 new value will be shown the next time the application is launched.
 
 It's worth noting that if a preference cannot be resolved a
-+griffon.plugins.preferences.NoSuchPreferenceException+ is thrown.
+`griffon.plugins.preferences.NoSuchPreferenceException` is thrown.
 
-The +@Preference+ annotation may be applied to methods too, as long as the method
+The `@Preference` annotation may be applied to methods too, as long as the method
 represents a property getter or setter. Both read and write methods must exist.
 The annotation may be applied to any of the property accessors. The setter has
 precedence in the event of both accessors being annotated.
