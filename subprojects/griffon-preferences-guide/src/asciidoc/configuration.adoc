@@ -43,6 +43,15 @@ dependencies {
 }
 ----
 
+.YAML Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-preferences-yaml:{project-version}'
+}
+----
+
 == Maven
 
 First configure the `griffon-preferences-plugin` BOM in your POM file, by placing the following
@@ -83,5 +92,15 @@ Next configure dependencies as required by your particular setup
 <dependency>
     <groupId>{project-group}</groupId>
     <artifactId>griffon-preferences-json</artifactId>
+</dependency>
+----
+
+.YAML Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-preferences-yaml</artifactId>
 </dependency>
 ----

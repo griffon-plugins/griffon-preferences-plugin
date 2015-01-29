@@ -16,7 +16,8 @@ apply plugin: 'com.bmuschko.java2html'
 
 ext.childProjects = [
     ':griffon-preferences-core',
-    ':griffon-preferences-json'
+    ':griffon-preferences-json',
+    ':griffon-preferences-yaml'
 ]
 
 ext.childProjects.each { evaluationDependsOn it }

@@ -22,18 +22,19 @@ import griffon.core.test.GriffonUnitRule
 import griffon.inject.DependsOn
 import griffon.plugins.preferences.PreferencesManager
 import griffon.plugins.preferences.PreferencesPersistor
-import groovy.json.JsonSlurperClassic
 import org.codehaus.griffon.runtime.core.injection.AbstractTestingModule
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
 
 import javax.annotation.Nonnull
 import javax.inject.Inject
 import java.text.SimpleDateFormat
 
-@DependsOn('preferences-json')
-class JsonPreferencesPersistorTest {
+@DependsOn('preferences-yaml')
+class YamlPreferencesPersistorTest {
     static {
         System.setProperty('org.slf4j.simpleLogger.defaultLogLevel', 'trace')
     }
@@ -92,10 +93,10 @@ class JsonPreferencesPersistorTest {
         preferencesPersistor.write(preferencesManager)
 
         // expect:
-        def json = new JsonSlurperClassic().parseText(preferencesPersistor.content)
-        assert 'STRING' == json.com.acme.SampleModel.pstring
-        assert !json.com.acme.SampleModel.pboolean
-        assert '12/12/2012' == json.com.acme.SampleModel.pdate
+        def yaml = new Yaml().load(preferencesPersistor.content)
+        assert 'STRING' == yaml.com.acme.SampleModel.pstring
+        assert !yaml.com.acme.SampleModel.pboolean
+        assert '12/12/2012' == yaml.com.acme.SampleModel.pdate
     }
 
     @Nonnull
@@ -112,7 +113,7 @@ class JsonPreferencesPersistorTest {
         ]
     }
 
-    private static class InMemoryPreferencesPersistor extends JsonPreferencesPersistor {
+    private static class InMemoryPreferencesPersistor extends YamlPreferencesPersistor {
         String content = '{}'
 
         @Inject

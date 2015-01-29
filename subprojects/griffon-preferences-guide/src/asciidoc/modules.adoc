@@ -30,3 +30,13 @@ Depends on: `preferences`
 include::{subproject-base}json{java-source}{package-base}/PreferencesJsonModule.java[tags=bindings,indent=0]
 ----
 
+== Preferences YAML
+
+Module name: `preferences-yaml`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}yaml{java-source}{package-base}/PreferencesYamlModule.java[tags=bindings,indent=0]
+----

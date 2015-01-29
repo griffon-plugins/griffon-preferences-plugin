@@ -1,5 +1,6 @@
 include 'subprojects/griffon-preferences-core'
 include 'subprojects/griffon-preferences-json'
+include 'subprojects/griffon-preferences-yaml'
 include 'subprojects/griffon-preferences-guide'
 
 rootProject.name = 'griffon-preferences-plugin'
