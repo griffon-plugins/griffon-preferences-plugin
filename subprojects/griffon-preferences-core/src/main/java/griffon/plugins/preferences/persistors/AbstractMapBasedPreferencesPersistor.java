@@ -53,6 +53,9 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
     private final GriffonApplication application;
 
     @Inject
+    private Metadata metadata;
+
+    @Inject
     public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application) {
         this.application = requireNonNull(application, "Argument 'application' cannot ne null");
     }
@@ -84,7 +87,7 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
     protected String resolvePreferencesFileName() {
         String defaultLocation = System.getProperty("user.home") +
             File.separator + "." +
-            Metadata.getCurrent().getApplicationName() +
+            metadata.getApplicationName() +
             File.separator +
             "preferences" +
             File.separator +
