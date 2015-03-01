@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.0">
+<meta name="generator" content="Asciidoctor 1.5.2">
 <meta name="author" content="Andres Almiray">
 <title>Griffon Preferences Plugin</title>
 <link rel="stylesheet" href="./css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="./coderay-asciidoctor.css">
 </head>
 <body class="book toc2 toc-left">
@@ -16,7 +16,7 @@
 <h1>Griffon Preferences Plugin</h1>
 <div class="details">
 <span id="author" class="author">Andres Almiray</span><br>
-<span id="revnumber">version 1.0.0</span>
+<span id="revnumber">version 1.1.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -37,6 +37,7 @@
 <ul class="sectlevel2">
 <li><a href="#_preferences">3.1. Preferences</a></li>
 <li><a href="#_preferences_json">3.2. Preferences JSON</a></li>
+<li><a href="#_preferences_yaml">3.3. Preferences YAML</a></li>
 </ul>
 </li>
 <li><a href="#_links">4. Links</a></li>
@@ -190,7 +191,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    griffon 'org.codehaus.griffon.plugins:griffon-preferences-plugin:1.0.0'
+    griffon 'org.codehaus.griffon.plugins:griffon-preferences-plugin:1.1.0'
 }</code></pre>
 </div>
 </div>
@@ -207,7 +208,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">Core Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-core:1.0.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-core:1.1.0'
 }</code></pre>
 </div>
 </div>
@@ -215,7 +216,15 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">JSON Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-json:1.0.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-json:1.1.0'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">YAML Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-yaml:1.1.0'
 }</code></pre>
 </div>
 </div>
@@ -234,7 +243,7 @@ snippet before the <code>&lt;build&gt;</code> element</p>
         <span class="tag">&lt;dependency&gt;</span>
             <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
             <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-plugin<span class="tag">&lt;/artifactId&gt;</span>
-            <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
+            <span class="tag">&lt;version&gt;</span>1.1.0<span class="tag">&lt;/version&gt;</span>
             <span class="tag">&lt;type&gt;</span>pom<span class="tag">&lt;/type&gt;</span>
             <span class="tag">&lt;scope&gt;</span>import<span class="tag">&lt;/scope&gt;</span>
         <span class="tag">&lt;/dependency&gt;</span>
@@ -260,6 +269,15 @@ snippet before the <code>&lt;build&gt;</code> element</p>
 <pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
     <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
     <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-json<span class="tag">&lt;/artifactId&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">YAML Support</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+    <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
+    <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-yaml<span class="tag">&lt;/artifactId&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -311,6 +329,22 @@ bind(GriffonAddon.class)
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_preferences_yaml"><a class="anchor" href="#_preferences_yaml"></a>3.3. Preferences YAML</h3>
+<div class="paragraph">
+<p>Module name: <code>preferences-yaml</code></p>
+</div>
+<div class="paragraph">
+<p>Depends on: <code>preferences</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="java">bind(PreferencesPersistor.class)
+    .to(YamlPreferencesPersistor.class)
+    .asSingleton();</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -327,8 +361,8 @@ bind(GriffonAddon.class)
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.0<br>
-Last updated 2014-10-10 20:52:36 CDT
+Version 1.1.0<br>
+Last updated 2014-10-11 03:54:07 CEST
 </div>
 </div>
 </body>
