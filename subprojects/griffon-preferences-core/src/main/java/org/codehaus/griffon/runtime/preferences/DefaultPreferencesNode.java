@@ -15,6 +15,7 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
+import griffon.core.editors.PropertyEditorResolver;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.PreferenceChangeEvent;
 import griffon.plugins.preferences.Preferences;
@@ -24,6 +25,7 @@ import griffon.util.TypeUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
+import java.beans.PropertyEditor;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +37,7 @@ import static java.util.Objects.requireNonNull;
  * @author Andres Almiray
  */
 public class DefaultPreferencesNode extends AbstractPreferencesNode {
+    private static final String ERROR_TYPE_NULL = "Argument 'type' must not be null";
     private static final String ERROR_KEY_BLANK = "Argument 'key' must not be null";
     private static final String ERROR_NODE_NAME_BLANK = "Argument 'nodeName' must not be null";
 
@@ -43,10 +46,6 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     private final Map<String, Object> properties = new LinkedHashMap<>();
     @GuardedBy("lock")
     private final Map<String, PreferencesNode> nodes = new LinkedHashMap<>();
-
-    public DefaultPreferencesNode(@Nonnull Preferences preferences, @Nonnull String name) {
-        super(preferences, null, name);
-    }
 
     public DefaultPreferencesNode(@Nonnull Preferences preferences, @Nonnull PreferencesNode parent, @Nonnull String name) {
         super(preferences, parent, name);
@@ -57,6 +56,20 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
         synchronized (lock) {
             return properties.get(requireNonBlank(key, ERROR_KEY_BLANK));
         }
+    }
+
+    @Nullable
+    @Override
+    public <T> T getAt(@Nonnull String key, Class<T> type) {
+        requireNonNull(type, ERROR_TYPE_NULL);
+        Object value = getAt(key);
+        PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(type);
+        if (value instanceof CharSequence) {
+            propertyEditor.setAsText(String.valueOf(value));
+        } else {
+            propertyEditor.setValue(value);
+        }
+        return (T) propertyEditor.getValue();
     }
 
     public void putAt(@Nonnull String key, @Nullable Object value) {
@@ -110,7 +123,7 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     }
 
     @Nonnull
-    public DefaultPreferencesNode createChildNode(@Nonnull String nodeName) {
+    public PreferencesNode createChildNode(@Nonnull String nodeName) {
         return new DefaultPreferencesNode(preferences, this, requireNonBlank(nodeName, ERROR_NODE_NAME_BLANK));
     }
 

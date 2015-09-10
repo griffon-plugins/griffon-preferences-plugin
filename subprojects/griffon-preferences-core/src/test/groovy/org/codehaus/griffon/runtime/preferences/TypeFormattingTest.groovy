@@ -37,6 +37,7 @@ import static griffon.util.ConfigUtils.getConfigValueAsString
 class TypeFormattingTest {
     static {
         System.setProperty('org.slf4j.simpleLogger.defaultLogLevel', 'trace')
+        System.setProperty('griffon.full.stacktrace', 'true')
     }
 
     @Rule

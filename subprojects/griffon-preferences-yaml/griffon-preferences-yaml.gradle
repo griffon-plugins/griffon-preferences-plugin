@@ -4,7 +4,7 @@ apply from: rootProject.file('gradle/code-coverage.gradle')
 dependencies {
     compileOnly "org.codehaus.griffon:griffon-core-compile:${griffonVersion}"
 
-    compile 'org.yaml:snakeyaml:1.14'
+    compile 'org.yaml:snakeyaml:1.16'
     compile project (':griffon-preferences-core')
 
     testCompileOnly "org.codehaus.griffon:griffon-groovy-compile:${griffonVersion}"
@@ -13,7 +13,7 @@ dependencies {
     testCompile "org.codehaus.griffon:griffon-groovy:${griffonVersion}"
 
     testRuntime "org.codehaus.griffon:griffon-guice:${griffonVersion}"
-    testRuntime 'org.slf4j:slf4j-simple:1.7.10'
+    testRuntime 'org.slf4j:slf4j-simple:1.7.12'
 }
 
 compileGroovy.enabled = false

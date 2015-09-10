@@ -27,7 +27,7 @@ public class DefaultPreferences extends AbstractPreferences {
     private final PreferencesNode root;
 
     public DefaultPreferences() {
-        root = new DefaultPreferencesNode(this, PreferencesNode.PATH_SEPARATOR);
+        root = new DefaultPreferencesNode(this, null, PreferencesNode.PATH_SEPARATOR);
     }
 
     @Nonnull
@@ -37,8 +37,8 @@ public class DefaultPreferences extends AbstractPreferences {
 
     @Nonnull
     public Preferences copy() {
-        DefaultPreferences copy = new DefaultPreferences();
-        copy.root.merge(root);
+        Preferences copy = new DefaultPreferences();
+        copy.getRoot().merge(root);
         return copy;
     }
 }

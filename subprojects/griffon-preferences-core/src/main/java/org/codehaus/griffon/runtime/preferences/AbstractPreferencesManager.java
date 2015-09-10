@@ -18,15 +18,24 @@ package org.codehaus.griffon.runtime.preferences;
 import griffon.core.ApplicationEvent;
 import griffon.core.CallableWithArgs;
 import griffon.core.GriffonApplication;
+import griffon.core.RunnableWithArgs;
 import griffon.core.editors.ExtendedPropertyEditor;
 import griffon.exceptions.InstanceMethodInvocationException;
-import griffon.plugins.preferences.*;
+import griffon.plugins.preferences.NodeChangeEvent;
+import griffon.plugins.preferences.NodeChangeListener;
+import griffon.plugins.preferences.Preference;
+import griffon.plugins.preferences.PreferenceChangeEvent;
+import griffon.plugins.preferences.PreferenceChangeListener;
+import griffon.plugins.preferences.PreferencesAware;
+import griffon.plugins.preferences.PreferencesManager;
+import griffon.plugins.preferences.PreferencesNode;
 import griffon.util.GriffonClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
@@ -35,7 +44,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static griffon.core.GriffonExceptionHandler.sanitize;
@@ -58,37 +72,32 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     protected static final String ERROR_TYPE_NULL = "Argument 'type' must not be null";
     protected static final String ERROR_VALUE_NULL = "Argument 'value' must not be null";
 
-    private final GriffonApplication application;
+    @Inject
+    protected GriffonApplication application;
     private final InstanceStore instanceStore = new InstanceStore();
 
-    @Inject
-    public AbstractPreferencesManager(@Nonnull GriffonApplication application) {
+    @PostConstruct
+    private void initialize() {
         this.application = requireNonNull(application, "Argument 'application' cannot ne null");
 
-        application.getEventRouter().addEventListener(ApplicationEvent.NEW_INSTANCE.getName(), new CallableWithArgs<Void>() {
+        application.getEventRouter().addEventListener(ApplicationEvent.NEW_INSTANCE.getName(), new RunnableWithArgs() {
             @Override
-            @Nullable
-            public Void call(@Nullable Object... args) {
+            public void run(@Nullable Object... args) {
                 Object instance = args[1];
                 injectPreferences(instance);
-                return null;
             }
         });
 
-        application.getEventRouter().addEventListener(ApplicationEvent.DESTROY_INSTANCE.getName(), new CallableWithArgs<Void>() {
+        application.getEventRouter().addEventListener(ApplicationEvent.DESTROY_INSTANCE.getName(), new RunnableWithArgs() {
             @Override
-            @Nullable
-            public Void call(@Nullable Object... args) {
+            public void run(@Nullable Object... args) {
                 Object instance = args[1];
                 if (instanceStore.contains(instance)) {
                     instanceStore.remove(instance);
                 }
-                return null;
             }
         });
-    }
 
-    protected void init() {
         getPreferences().addNodeChangeListener(new NodeChangeListener() {
             public void nodeChanged(@Nonnull NodeChangeEvent event) {
                 if (event.getType() == NodeChangeEvent.Type.ADDED) {
@@ -124,11 +133,6 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                 }
             }
         });
-    }
-
-    @Nonnull
-    protected GriffonApplication getApplication() {
-        return application;
     }
 
     public void save(@Nonnull Object instance) {

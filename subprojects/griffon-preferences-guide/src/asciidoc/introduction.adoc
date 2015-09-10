@@ -79,3 +79,6 @@ The `@Preference` annotation may be applied to methods too, as long as the metho
 represents a property getter or setter. Both read and write methods must exist.
 The annotation may be applied to any of the property accessors. The setter has
 precedence in the event of both accessors being annotated.
+
+Griffon version: {griffon-version}
+

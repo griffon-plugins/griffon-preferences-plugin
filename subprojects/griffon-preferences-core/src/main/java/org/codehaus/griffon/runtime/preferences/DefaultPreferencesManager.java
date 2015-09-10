@@ -15,11 +15,9 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
-import griffon.core.GriffonApplication;
 import griffon.plugins.preferences.Preferences;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 /**
  * @author Andres Almiray
@@ -27,11 +25,8 @@ import javax.inject.Inject;
 public class DefaultPreferencesManager extends AbstractPreferencesManager {
     private final Preferences preferences;
 
-    @Inject
-    public DefaultPreferencesManager(@Nonnull GriffonApplication application) {
-        super(application);
+    public DefaultPreferencesManager() {
         preferences = new DefaultPreferences();
-        init();
     }
 
     @Nonnull

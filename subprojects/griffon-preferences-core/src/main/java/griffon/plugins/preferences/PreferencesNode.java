@@ -37,6 +37,9 @@ public interface PreferencesNode {
     @Nullable
     Object getAt(@Nonnull String key);
 
+    @Nullable
+    <T> T getAt(@Nonnull String key, Class<T> type);
+
     void putAt(@Nonnull String key, @Nullable Object value);
 
     boolean isRoot();

@@ -36,6 +36,7 @@ import javax.inject.Inject
 class PreferencesTest {
     static {
         System.setProperty('org.slf4j.simpleLogger.defaultLogLevel', 'trace')
+        System.setProperty('griffon.full.stacktrace', 'true')
     }
 
     @Rule
@@ -56,7 +57,7 @@ class PreferencesTest {
             [
                 com: [
                     acme: [
-                        PreferencesAwareModel: [
+                        PreferencesAwareModel   : [
                             value: 'value1'
                         ],
                         NotPreferencesAwareModel: [
