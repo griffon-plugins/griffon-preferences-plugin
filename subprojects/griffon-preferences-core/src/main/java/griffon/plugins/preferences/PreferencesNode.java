@@ -38,7 +38,13 @@ public interface PreferencesNode {
     Object getAt(@Nonnull String key);
 
     @Nullable
-    <T> T getAt(@Nonnull String key, Class<T> type);
+    Object getAt(@Nonnull String key, @Nullable Object defaultValue);
+
+    @Nullable
+    <T> T getAt(@Nonnull String key, @Nonnull Class<T> type);
+
+    @Nullable
+    <T> T getAt(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue);
 
     void putAt(@Nonnull String key, @Nullable Object value);
 

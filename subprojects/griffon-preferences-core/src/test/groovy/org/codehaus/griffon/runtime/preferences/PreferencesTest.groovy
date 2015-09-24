@@ -90,6 +90,58 @@ class PreferencesTest {
     }
 
     @Test
+    void useDefaultValueIfPreferenceKeyIsUndefined() {
+        // when:
+        def stringVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("undefinedKey", "defaultString")
+
+        // expect:
+        assert stringVal == 'defaultString'
+
+        // when:
+        def defaultDate = new Date()
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("undefinedKey", Date.class, defaultDate)
+
+        // expect:
+        assert dateVal == defaultDate
+    }
+
+    @Test
+    void useDefaultValueIfPreferenceValueIsNull() {
+        preferencesManager.preferences.node(PreferencesAwareModel).putAt("value", null)
+
+        // when:
+        def stringVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("value", "defaultString")
+
+        // expect:
+        assert stringVal == 'defaultString'
+
+        // when:
+        def defaultDate = new Date()
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("value", Date.class, defaultDate)
+
+        // expect:
+        assert dateVal == defaultDate
+    }
+
+    @Test
+    public void actualValueIsUsedOverDefaultValueIfPresent() {
+        // when:
+        def stringVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("value", "defaultString")
+
+        // expect:
+        assert stringVal == 'value1'
+
+        // when:
+        def date = new Date()
+        preferencesManager.preferences.node(PreferencesAwareModel).putAt("value", date)
+        def defaultDate = new Date()
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAt("value", Date.class, defaultDate)
+
+        // expect:
+        assert dateVal == date
+    }
+
+    @Test
     void writeFromModelToPreferences() {
         // given:
         ValueHolder model = application.artifactManager.newInstance(PreferencesAwareModel)
