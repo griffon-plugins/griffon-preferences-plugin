@@ -60,7 +60,14 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
 
     @Nullable
     @Override
-    public <T> T getAt(@Nonnull String key, Class<T> type) {
+    public Object getAt(@Nonnull String key, @Nullable Object defaultValue) {
+        Object value = getAt(key);
+        return value != null ? value : defaultValue;
+    }
+
+    @Nullable
+    @Override
+    public <T> T getAt(@Nonnull String key, @Nonnull Class<T> type) {
         requireNonNull(type, ERROR_TYPE_NULL);
         Object value = getAt(key);
         PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(type);
@@ -70,6 +77,13 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
             propertyEditor.setValue(value);
         }
         return (T) propertyEditor.getValue();
+    }
+
+    @Nullable
+    @Override
+    public <T> T getAt(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue) {
+        T value = getAt(key, type);
+        return value != null ? value : defaultValue;
     }
 
     public void putAt(@Nonnull String key, @Nullable Object value) {
