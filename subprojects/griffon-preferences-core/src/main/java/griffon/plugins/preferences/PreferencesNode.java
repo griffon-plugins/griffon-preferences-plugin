@@ -41,10 +41,16 @@ public interface PreferencesNode {
     Object getAt(@Nonnull String key, @Nullable Object defaultValue);
 
     @Nullable
-    <T> T getAt(@Nonnull String key, @Nonnull Class<T> type);
+    <T> T getAs(@Nonnull String key);
 
     @Nullable
-    <T> T getAt(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue);
+    <T> T getAs(@Nonnull String key, @Nullable Object defaultValue);
+
+    @Nullable
+    <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type);
+
+    @Nullable
+    <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue);
 
     void putAt(@Nonnull String key, @Nullable Object value);
 

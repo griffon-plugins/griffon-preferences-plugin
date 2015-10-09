@@ -20,6 +20,7 @@ import griffon.core.CallableWithArgs;
 import griffon.core.GriffonApplication;
 import griffon.core.RunnableWithArgs;
 import griffon.core.editors.ExtendedPropertyEditor;
+import griffon.core.editors.PropertyEditorResolver;
 import griffon.exceptions.InstanceMethodInvocationException;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.NodeChangeListener;
@@ -237,14 +238,11 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     protected void doPreferencesInjection(@Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
         for (PreferenceDescriptor descriptor : descriptors.values()) {
             Object value = resolvePreference(descriptor.path, descriptor.args, descriptor.defaultValue);
-
-            if (null != value) {
-                InjectionPoint injectionPoint = descriptor.asInjectionPoint();
-                if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
-                    value = convertValue(injectionPoint.getType(), value, descriptor.format);
-                }
-                injectionPoint.setValue(instance, value);
+            InjectionPoint injectionPoint = descriptor.asInjectionPoint();
+            if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
+                value = convertValue(injectionPoint.getType(), value, descriptor.format);
             }
+            injectionPoint.setValue(instance, value);
         }
     }
 
@@ -306,7 +304,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         requireNonNull(type, ERROR_TYPE_NULL);
         requireNonNull(value, ERROR_VALUE_NULL);
         PropertyEditor propertyEditor = resolvePropertyEditor(type, format);
-        if (null == propertyEditor) return value;
+        if (propertyEditor instanceof PropertyEditorResolver.NoopPropertyEditor) return value;
         if (value instanceof CharSequence) {
             propertyEditor.setAsText(String.valueOf(value));
         } else {
@@ -315,7 +313,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         return propertyEditor.getValue();
     }
 
-    @Nullable
+    @Nonnull
     protected PropertyEditor resolvePropertyEditor(@Nonnull Class<?> type, @Nullable String format) {
         requireNonNull(type, ERROR_TYPE_NULL);
         PropertyEditor propertyEditor = findEditor(type);

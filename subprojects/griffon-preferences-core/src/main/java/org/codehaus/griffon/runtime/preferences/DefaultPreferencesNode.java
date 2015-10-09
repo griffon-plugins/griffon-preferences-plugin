@@ -66,8 +66,22 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     }
 
     @Nullable
+    public <T> T getAs(@Nonnull String key) {
+        synchronized (lock) {
+            return (T) properties.get(requireNonBlank(key, ERROR_KEY_BLANK));
+        }
+    }
+
+    @Nullable
     @Override
-    public <T> T getAt(@Nonnull String key, @Nonnull Class<T> type) {
+    public <T> T getAs(@Nonnull String key, @Nullable Object defaultValue) {
+        Object value = getAt(key);
+        return (T) (value != null ? value : defaultValue);
+    }
+
+    @Nullable
+    @Override
+    public <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type) {
         requireNonNull(type, ERROR_TYPE_NULL);
         Object value = getAt(key);
         PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(type);
@@ -81,8 +95,8 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
 
     @Nullable
     @Override
-    public <T> T getAt(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue) {
-        T value = getAt(key, type);
+    public <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue) {
+        T value = getAsConverted(key, type);
         return value != null ? value : defaultValue;
     }
 
