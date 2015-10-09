@@ -34,23 +34,71 @@ public interface PreferencesNode {
     @Nullable
     PreferencesNode parent();
 
+    /**
+     * Returns the value associated with the given key.
+     *
+     * @param key the key to search
+     * @return the value associated with the key or <tt>null<</tt> if not found.
+     */
     @Nullable
     Object getAt(@Nonnull String key);
 
+    /**
+     * Returns the value associated with the given key.
+     *
+     * @param key          the key to search
+     * @param defaultValue the value to be returned if the key was not found
+     * @return returns the value associated with the key, <tt>defaultValue</tt> if the key was not found
+     */
     @Nullable
     Object getAt(@Nonnull String key, @Nullable Object defaultValue);
 
+    /**
+     * Returns the value associated with the given key.
+     *
+     * @param key the key to search
+     * @param <T> the type of the value
+     * @return returns the value associated with the key, <tt>defaultValue</tt> if the key was not found
+     * @since 1.3.0o
+     */
     @Nullable
     <T> T getAs(@Nonnull String key);
 
+    /**
+     * Returns the value associated with the given key.
+     *
+     * @param key          the key to search
+     * @param defaultValue the value to be returned if the key was not found
+     * @param <T>          the type of the value
+     * @return returns the value associated with the key, <tt>defaultValue</tt> if the key was not found
+     * @since 1.3.0
+     */
     @Nullable
-    <T> T getAs(@Nonnull String key, @Nullable Object defaultValue);
+    <T> T getAs(@Nonnull String key, @Nullable T defaultValue);
 
+    /**
+     * Finds a value associated with the given key. The value is
+     * converted to type <tt>T</tt> if found using a {@code PropertyEditor}.
+     *
+     * @param key  the key to search
+     * @param type the type to be returned
+     * @since 1.3.0
+     */
     @Nullable
-    <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type);
+    <T> T getConverted(@Nonnull String key, @Nonnull Class<T> type);
 
+    /**
+     * Finds a value associated with the given key. The value is
+     * converted to type <tt>T</tt> if found using a {@code PropertyEditor}.
+     * If not found then the supplied <tt>defaultValue</tt> will be returned.
+     *
+     * @param key          the key to search
+     * @param type         the type to be returned
+     * @param defaultValue the value to be returned if the key is not found
+     * @since 1.3.0
+     */
     @Nullable
-    <T> T getAsConverted(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue);
+    <T> T getConverted(@Nonnull String key, @Nonnull Class<T> type, @Nullable T defaultValue);
 
     void putAt(@Nonnull String key, @Nullable Object value);
 

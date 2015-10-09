@@ -99,7 +99,7 @@ class PreferencesTest {
 
         // when:
         def defaultDate = new Date()
-        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAsConverted("undefinedKey", Date.class, defaultDate)
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getConverted("undefinedKey", Date.class, defaultDate)
 
         // expect:
         assert dateVal == defaultDate
@@ -117,7 +117,7 @@ class PreferencesTest {
 
         // when:
         def defaultDate = new Date()
-        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAsConverted("value", Date.class, defaultDate)
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getConverted("value", Date.class, defaultDate)
 
         // expect:
         assert dateVal == defaultDate
@@ -135,7 +135,7 @@ class PreferencesTest {
         def date = new Date()
         preferencesManager.preferences.node(PreferencesAwareModel).putAt("value", date)
         def defaultDate = new Date()
-        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getAsConverted("value", Date.class, defaultDate)
+        def dateVal = preferencesManager.preferences.node(PreferencesAwareModel).getConverted("value", Date.class, defaultDate)
 
         // expect:
         assert dateVal == date
