@@ -62,23 +62,19 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
 
     @Nonnull
     protected InputStream inputStream() throws IOException {
-        String fileName = resolvePreferencesFileName();
+        File file = resolveFile(resolvePreferencesFileName());
         if (LOG.isInfoEnabled()) {
-            LOG.info("Reading preferences from " + fileName);
+            LOG.info("Reading preferences from " + file.getAbsolutePath());
         }
-        File file = new File(fileName);
-        if (!file.exists()) file.getParentFile().mkdirs();
         return new FileInputStream(file);
     }
 
     @Nonnull
     protected OutputStream outputStream() throws IOException {
-        String fileName = resolvePreferencesFileName();
+        File file = resolveFile(resolvePreferencesFileName());
         if (LOG.isInfoEnabled()) {
-            LOG.info("Writing preferences to " + fileName);
+            LOG.info("Writing preferences to " + file.getAbsolutePath());
         }
-        File file = new File(fileName);
-        if (!file.exists()) file.getParentFile().mkdirs();
         return new FileOutputStream(file);
     }
 
@@ -96,6 +92,23 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
         return application.getConfiguration().getAsString(
             KEY_PREFERENCES_PERSISTOR_LOCATION,
             defaultLocation);
+    }
+
+    @Nonnull
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    protected File resolveFile(@Nonnull String fileName) {
+        File file = new File(fileName);
+        if (!file.isAbsolute()) {
+            file = new File(System.getProperty("user.home") +
+                File.separator + "." +
+                metadata.getApplicationName() +
+                File.separator +
+                "preferences" +
+                File.separator +
+                fileName);
+        }
+        if (!file.exists()) file.getParentFile().mkdirs();
+        return file;
     }
 
     @Nonnull
@@ -198,12 +211,8 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
             return tmp;
         } else {
             PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(value.getClass());
-            if (propertyEditor != null) {
-                propertyEditor.setValue(value);
-                return propertyEditor.getAsText();
-            } else {
-                return value;
-            }
+            propertyEditor.setValue(value);
+            return propertyEditor.getAsText();
         }
     }
 }
