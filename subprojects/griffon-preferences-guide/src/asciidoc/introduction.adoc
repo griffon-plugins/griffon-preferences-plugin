@@ -80,5 +80,15 @@ represents a property getter or setter. Both read and write methods must exist.
 The annotation may be applied to any of the property accessors. The setter has
 precedence in the event of both accessors being annotated.
 
+Values of properties annotated with `@Preference` are not automatically sincey with their
+`PrefernceNode` counterpart. This is to ensure only valid preference values are stored.
+Thus developers must manually invoke the `save()` method on an instance of `PreferencesManager`,
+such as
+
+[source,java,linenumbers,options="nowrap"]
+----
+preferencesManager.save(model)
+----
+
 Griffon version: {griffon-version}
 
