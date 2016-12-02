@@ -1,3 +1,4 @@
 griffon.plugins.preferences
 griffon.plugins.preferences.persistors
 org.codehaus.griffon.runtime.preferences
+org.codehaus.griffon.runtime.preferences.injection
