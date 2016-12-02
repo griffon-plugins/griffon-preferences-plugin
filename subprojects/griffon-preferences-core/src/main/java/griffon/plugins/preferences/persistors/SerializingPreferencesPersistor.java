@@ -19,7 +19,11 @@ import griffon.core.GriffonApplication;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
 

@@ -15,7 +15,12 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
-import griffon.plugins.preferences.*;
+import griffon.plugins.preferences.NodeChangeEvent;
+import griffon.plugins.preferences.NodeChangeListener;
+import griffon.plugins.preferences.PreferenceChangeEvent;
+import griffon.plugins.preferences.PreferenceChangeListener;
+import griffon.plugins.preferences.Preferences;
+import griffon.plugins.preferences.PreferencesNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

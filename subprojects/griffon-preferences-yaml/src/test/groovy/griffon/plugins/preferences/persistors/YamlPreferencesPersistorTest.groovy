@@ -26,7 +26,6 @@ import org.codehaus.griffon.runtime.core.injection.AbstractTestingModule
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 
 import javax.annotation.Nonnull
