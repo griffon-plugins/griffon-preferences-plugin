@@ -49,7 +49,7 @@ import static java.util.Objects.requireNonNull;
 public abstract class AbstractMapBasedPreferencesPersistor implements PreferencesPersistor {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMapBasedPreferencesPersistor.class);
     public static final String KEY_PREFERENCES_PERSISTOR_LOCATION = "preferences.persistor.location";
-    public static final String DEFAULT_PREFIX = ".prefs";
+    public static final String DEFAULT_EXTENSION = ".prefs";
 
     protected final GriffonApplication application;
 
@@ -89,7 +89,7 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
             "preferences" +
             File.separator +
             "default" +
-            resolvePrefix();
+            resolveExtension();
         return application.getConfiguration().getAsString(
             KEY_PREFERENCES_PERSISTOR_LOCATION,
             defaultLocation);
@@ -113,8 +113,8 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
     }
 
     @Nonnull
-    protected String resolvePrefix() {
-        return DEFAULT_PREFIX;
+    protected String resolveExtension() {
+        return DEFAULT_EXTENSION;
     }
 
     @Nonnull

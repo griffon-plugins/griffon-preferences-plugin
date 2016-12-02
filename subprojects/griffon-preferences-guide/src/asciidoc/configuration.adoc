@@ -34,6 +34,15 @@ dependencies {
 }
 ----
 
+.Jackson Support
+[source,groovy,options="nowrap"]
+[subs="attributes"]
+----
+dependencies {
+    compile '{project-group}:griffon-preferences-jackson:{project-version}'
+}
+----
+
 .JSON Support
 [source,groovy,options="nowrap"]
 [subs="attributes"]
@@ -82,6 +91,16 @@ Next configure dependencies as required by your particular setup
 <dependency>
     <groupId>{project-group}</groupId>
     <artifactId>griffon-preferences-core</artifactId>
+</dependency>
+----
+
+.Jackson Support
+[source,xml,options="nowrap"]
+[subs="attributes,verbatim"]
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>griffon-preferences-jackson</artifactId>
 </dependency>
 ----
 

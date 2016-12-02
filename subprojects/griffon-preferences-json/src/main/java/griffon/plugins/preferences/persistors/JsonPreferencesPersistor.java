@@ -45,7 +45,7 @@ public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersist
 
     @Nonnull
     @Override
-    protected String resolvePrefix() {
+    protected String resolveExtension() {
         return ".json";
     }
 

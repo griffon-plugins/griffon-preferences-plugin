@@ -19,6 +19,19 @@ Module name: `preferences`
 include::{subproject-base}core{java-source}{package-base}/PreferencesModule.java[tags=bindings,indent=0]
 ----
 
+== Preferences Jackson
+
+Module name: `preferences-jackson`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}jackson{java-source}{package-base}/PreferencesJacksonModule.java[tags=bindings,indent=0]
+----
+
+NOTE: You must define a binding for Jackson's `com.fasterxml.jackson.databind.ObjectMapper` type.
+
 == Preferences JSON
 
 Module name: `preferences-json`

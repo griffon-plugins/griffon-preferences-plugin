@@ -4,7 +4,7 @@ apply from: rootProject.file('gradle/code-coverage.gradle')
 dependencies {
     compileOnly "org.codehaus.griffon:griffon-core-compile:${griffonVersion}"
 
-    compile 'org.json:json:20140107'
+    compile "org.json:json:$jsonVersion"
     compile project (':griffon-preferences-core')
 
     testCompileOnly "org.codehaus.griffon:griffon-groovy-compile:${griffonVersion}"
