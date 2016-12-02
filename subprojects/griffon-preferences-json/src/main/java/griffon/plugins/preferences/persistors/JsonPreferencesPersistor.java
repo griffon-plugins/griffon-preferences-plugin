@@ -60,7 +60,7 @@ public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     }
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    private void readInto(@Nonnull JSONObject json, @Nonnull PreferencesNode node) {
+    protected void readInto(@Nonnull JSONObject json, @Nonnull PreferencesNode node) {
         for (Object k : json.keySet()) {
             String key = String.valueOf(k);
             Object value = json.get(key);
@@ -83,7 +83,7 @@ public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     }
 
     @Nonnull
-    private Collection expand(@Nonnull JSONArray array) {
+    protected Collection expand(@Nonnull JSONArray array) {
         List<Object> list = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             Object element = array.get(i);
@@ -101,7 +101,7 @@ public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersist
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    private JSONObject doRead(@Nonnull InputStream inputStream) throws IOException {
+    protected JSONObject doRead(@Nonnull InputStream inputStream) throws IOException {
         if (inputStream.available() > 0) {
             return new JSONObject(new JSONTokener(inputStream));
         }

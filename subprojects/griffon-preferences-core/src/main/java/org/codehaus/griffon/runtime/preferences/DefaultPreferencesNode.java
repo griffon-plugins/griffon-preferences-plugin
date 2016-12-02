@@ -41,11 +41,11 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     private static final String ERROR_KEY_BLANK = "Argument 'key' must not be null";
     private static final String ERROR_NODE_NAME_BLANK = "Argument 'nodeName' must not be null";
 
-    private final Object lock = new Object[0];
+    protected final Object lock = new Object[0];
     @GuardedBy("lock")
-    private final Map<String, Object> properties = new LinkedHashMap<>();
+    protected final Map<String, Object> properties = new LinkedHashMap<>();
     @GuardedBy("lock")
-    private final Map<String, PreferencesNode> nodes = new LinkedHashMap<>();
+    protected final Map<String, PreferencesNode> nodes = new LinkedHashMap<>();
 
     public DefaultPreferencesNode(@Nonnull Preferences preferences, @Nonnull PreferencesNode parent, @Nonnull String name) {
         super(preferences, parent, name);
@@ -111,7 +111,7 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
         }
     }
 
-    private void firePreferencesChanged(@Nonnull String path, @Nonnull String key, @Nullable Object oldValue, @Nullable Object newValue) {
+    protected void firePreferencesChanged(@Nonnull String path, @Nonnull String key, @Nullable Object oldValue, @Nullable Object newValue) {
         preferences.preferenceChanged(new PreferenceChangeEvent(path, key, oldValue, newValue));
     }
 

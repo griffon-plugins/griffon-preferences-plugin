@@ -58,8 +58,9 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
         return preferencesManager.getPreferences();
     }
 
+    @Override
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    private void readInto(@Nonnull Map<String, Object> yaml, @Nonnull PreferencesNode node) {
+    protected void readInto(@Nonnull Map<String, Object> yaml, @Nonnull PreferencesNode node) {
         for (Map.Entry<String, Object> e : yaml.entrySet()) {
             String key = e.getKey();
             Object value = e.getValue();
@@ -82,7 +83,7 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     }
 
     @Nonnull
-    private Collection expand(@Nonnull List<Object> array) {
+    protected Collection expand(@Nonnull List<Object> array) {
         List<Object> list = new ArrayList<>();
         for (Object element : array) {
             if (element instanceof Number ||
@@ -99,7 +100,7 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    private Map<String, Object> doRead(@Nonnull InputStream inputStream) throws IOException {
+    protected Map<String, Object> doRead(@Nonnull InputStream inputStream) throws IOException {
         if (inputStream.available() > 0) {
             return new Yaml().loadAs(inputStream, Map.class);
         }

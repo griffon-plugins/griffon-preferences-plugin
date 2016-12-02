@@ -48,12 +48,13 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AbstractMapBasedPreferencesPersistor implements PreferencesPersistor {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMapBasedPreferencesPersistor.class);
-    private static final String KEY_PREFERENCES_PERSISTOR_LOCATION = "preferences.persistor.location";
-    private static final String DEFAULT_PREFIX = ".prefs";
-    private final GriffonApplication application;
+    public static final String KEY_PREFERENCES_PERSISTOR_LOCATION = "preferences.persistor.location";
+    public static final String DEFAULT_PREFIX = ".prefs";
+
+    protected final GriffonApplication application;
 
     @Inject
-    private Metadata metadata;
+    protected Metadata metadata;
 
     @Inject
     public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application) {
@@ -146,7 +147,7 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
     protected abstract void write(@Nonnull Map<String, Object> map, @Nonnull OutputStream outputStream) throws IOException;
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    private void readInto(@Nonnull Map<String, Object> map, @Nonnull PreferencesNode node) {
+    protected void readInto(@Nonnull Map<String, Object> map, @Nonnull PreferencesNode node) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
@@ -163,7 +164,7 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
         }
     }
 
-    private void writeTo(PreferencesNode node, Map<String, Object> map) {
+    protected void writeTo(PreferencesNode node, Map<String, Object> map) {
         for (String key : node.keys()) {
             Object value = node.getAt(key);
             if (value != null) {
@@ -177,7 +178,7 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
         }
     }
 
-    private Object convertValue(Object value) {
+    protected Object convertValue(Object value) {
         if (value == null ||
             value instanceof Boolean ||
             value instanceof Number ||

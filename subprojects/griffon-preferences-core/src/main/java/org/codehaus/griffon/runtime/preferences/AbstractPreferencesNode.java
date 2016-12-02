@@ -33,7 +33,7 @@ public abstract class AbstractPreferencesNode implements PreferencesNode {
     protected final Preferences preferences;
     protected PreferencesNode parent;
     protected final String name;
-    private String path;
+    protected String path;
 
     public AbstractPreferencesNode(@Nonnull Preferences preferences, @Nullable PreferencesNode parent, @Nonnull String name) {
         this.preferences = requireNonNull(preferences, "Argument 'preferences' must not be null");
@@ -146,7 +146,7 @@ public abstract class AbstractPreferencesNode implements PreferencesNode {
     }
 
     @Nonnull
-    private String[] parsePath(String path) {
+    protected String[] parsePath(String path) {
         if (isBlank(path) ||
             (!isRoot() && (path.startsWith(PATH_SEPARATOR)) ||
                 path.endsWith(PATH_SEPARATOR))) return new String[0];
