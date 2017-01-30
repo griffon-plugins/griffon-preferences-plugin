@@ -21,6 +21,7 @@ import griffon.core.GriffonApplication;
 import griffon.core.RunnableWithArgs;
 import griffon.core.editors.ExtendedPropertyEditor;
 import griffon.core.editors.PropertyEditorResolver;
+import griffon.plugins.preferences.KeyResolutionStrategy;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.NodeChangeListener;
 import griffon.plugins.preferences.Preference;
@@ -55,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 
 import static griffon.core.editors.PropertyEditorResolver.findEditor;
+import static griffon.plugins.preferences.KeyResolutionStrategy.DECLARING_CLASS;
+import static griffon.plugins.preferences.KeyResolutionStrategy.PREFERENCES_KEY_RESOLUTION_STRATEGY;
+import static griffon.util.ConfigUtils.getConfigValueAsString;
 import static griffon.util.GriffonNameUtils.isBlank;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.util.Objects.requireNonNull;
@@ -73,9 +77,18 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     protected GriffonApplication application;
     protected final InstanceStore instanceStore = new InstanceStore();
 
+    protected KeyResolutionStrategy keyResolutionStrategy;
+
     @PostConstruct
     private void initialize() {
         this.application = requireNonNull(application, "Argument 'application' cannot ne null");
+
+        String resolutionStrategy = getConfigValueAsString(application.getConfiguration().asFlatMap(), PREFERENCES_KEY_RESOLUTION_STRATEGY, DECLARING_CLASS.name());
+        try {
+            keyResolutionStrategy = KeyResolutionStrategy.valueOf(resolutionStrategy.toUpperCase());
+        } catch (Exception e) {
+            keyResolutionStrategy = DECLARING_CLASS;
+        }
 
         application.getEventRouter().addEventListener(ApplicationEvent.NEW_INSTANCE.getName(), new RunnableWithArgs() {
             @Override
@@ -138,7 +151,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         Map<String, PreferenceDescriptor> descriptors = new LinkedHashMap<>();
         Class klass = instance.getClass();
         do {
-            harvestDescriptors(klass, instance, descriptors);
+            harvestDescriptors(instance.getClass(), klass, instance, descriptors);
             klass = klass.getSuperclass();
         } while (null != klass);
 
@@ -151,7 +164,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         Map<String, PreferenceDescriptor> descriptors = new LinkedHashMap<>();
         Class klass = instance.getClass();
         do {
-            harvestDescriptors(klass, instance, descriptors);
+            harvestDescriptors(instance.getClass(), klass, instance, descriptors);
             klass = klass.getSuperclass();
         } while (null != klass);
 
@@ -165,8 +178,8 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         }
     }
 
-    protected void harvestDescriptors(@Nonnull Class klass, @Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
-        PropertyDescriptor[] propertyDescriptors = GriffonClassUtils.getPropertyDescriptors(klass);
+    protected void harvestDescriptors(@Nonnull Class instanceClass, @Nonnull Class currentClass, @Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
+        PropertyDescriptor[] propertyDescriptors = GriffonClassUtils.getPropertyDescriptors(currentClass);
         for (PropertyDescriptor pd : propertyDescriptors) {
             Method readMethod = pd.getReadMethod();
             Method writeMethod = pd.getWriteMethod();
@@ -182,8 +195,9 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             if (null == annotation) { continue; }
 
             String propertyName = pd.getName();
-            String fqName = writeMethod.getDeclaringClass().getName().replace('$', '.') + "." + writeMethod.getName();
-            String path = "/" + writeMethod.getDeclaringClass().getName().replace('$', '/').replace('.', '/') + "." + propertyName;
+            Class resolvedClass = resolveclass(instanceClass, writeMethod.getDeclaringClass());
+            String fqName = resolvedClass.getName().replace('$', '.') + "." + writeMethod.getName();
+            String path = "/" + resolvedClass.getName().replace('$', '/').replace('.', '/') + "." + propertyName;
             String key = annotation.key();
             String[] args = annotation.args();
             String defaultValue = annotation.defaultValue();
@@ -202,15 +216,16 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             descriptors.put(propertyName, new MethodPreferenceDescriptor(readMethod, writeMethod, fqName, resolvedPath, args, defaultValue, format));
         }
 
-        for (Field field : klass.getDeclaredFields()) {
+        for (Field field : currentClass.getDeclaredFields()) {
             if (field.isSynthetic() || isStatic(field.getModifiers()) || descriptors.containsKey(field.getName())) {
                 continue;
             }
             final Preference annotation = field.getAnnotation(Preference.class);
             if (null == annotation) { continue; }
 
-            String fqFieldName = field.getDeclaringClass().getName().replace('$', '.') + "." + field.getName();
-            String path = "/" + field.getDeclaringClass().getName().replace('$', '/').replace('.', '/') + "." + field.getName();
+            Class resolvedClass = resolveclass(instanceClass, field.getDeclaringClass());
+            String fqFieldName = resolvedClass.getName().replace('$', '.') + "." + field.getName();
+            String path = "/" + resolvedClass.getName().replace('$', '/').replace('.', '/') + "." + field.getName();
             String key = annotation.key();
             String[] args = annotation.args();
             String defaultValue = annotation.defaultValue();
@@ -228,6 +243,17 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             }
 
             descriptors.put(field.getName(), new FieldPreferenceDescriptor(field, fqFieldName, resolvedPath, args, defaultValue, format));
+        }
+    }
+
+    @Nonnull
+    protected Class resolveclass(@Nonnull Class instanceClass, @Nonnull Class declaringClass) {
+        switch (keyResolutionStrategy) {
+            case INSTANCE_CLASS:
+                return instanceClass;
+            case DECLARING_CLASS:
+            default:
+                return declaringClass;
         }
     }
 

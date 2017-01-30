@@ -80,7 +80,7 @@ represents a property getter or setter. Both read and write methods must exist.
 The annotation may be applied to any of the property accessors. The setter has
 precedence in the event of both accessors being annotated.
 
-Values of properties annotated with `@Preference` are not automatically synched with their
+Values of properties annotated with `@Preference` are not automatically synchronized with their
 `PreferenceNode` counterpart. This is to ensure only valid preference values are stored.
 Thus developers must manually invoke the `save()` method on an instance of `PreferencesManager`,
 such as
@@ -89,6 +89,20 @@ such as
 ----
 preferencesManager.save(model)
 ----
+
+Version 1.4.0 and earlier computed the value of a preference key based on the declaring class of
+the matching annotated field or method. You can change this behavior since version 1.5.0 by defining
+a configuration flag in `Config.groovy` and/or `Config.properties`.
+
+.Config.properties
+[source,java]
+----
+preferences.key.resolution.strategy = instance_class
+----
+
+Valid values are: `declaring_class`, `instance_class`. Although `instance_class` is more aligned with
+the inheritance model of members in Java, `declaring_class` remains the default value to keep backward
+compatibility with existing applications.
 
 Griffon version: {griffon-version}
 
