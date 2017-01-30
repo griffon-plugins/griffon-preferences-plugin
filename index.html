@@ -16,7 +16,7 @@
 <h1>Griffon Preferences Plugin</h1>
 <div class="details">
 <span id="author" class="author">Andres Almiray</span><br>
-<span id="revnumber">version 1.4.0</span>
+<span id="revnumber">version 1.5.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -174,7 +174,7 @@ The annotation may be applied to any of the property accessors. The setter has
 precedence in the event of both accessors being annotated.</p>
 </div>
 <div class="paragraph">
-<p>Values of properties annotated with <code>@Preference</code> are not automatically synched with their
+<p>Values of properties annotated with <code>@Preference</code> are not automatically synchronized with their
 <code>PreferenceNode</code> counterpart. This is to ensure only valid preference values are stored.
 Thus developers must manually invoke the <code>save()</code> method on an instance of <code>PreferencesManager</code>,
 such as</p>
@@ -189,7 +189,23 @@ such as</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Griffon version: 2.9.0</p>
+<p>Version 1.4.0 and earlier computed the value of a preference key based on the declaring class of
+the matching annotated field or method. You can change this behavior since version 1.5.0 by defining
+a configuration flag in <code>Config.groovy</code> and/or <code>Config.properties</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Config.properties</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">preferences.key.resolution.strategy = instance_class</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Valid values are: <code>declaring_class</code>, <code>instance_class</code>. Although <code>instance_class</code> is more aligned with
+the inheritance model of members in Java, <code>declaring_class</code> remains the default value to keep backward
+compatibility with existing applications.</p>
+</div>
+<div class="paragraph">
+<p>Griffon version: 2.9.1</p>
 </div>
 </div>
 </div>
@@ -210,7 +226,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    griffon 'org.codehaus.griffon.plugins:griffon-preferences-plugin:1.4.0'
+    griffon 'org.codehaus.griffon.plugins:griffon-preferences-plugin:1.5.0'
 }</code></pre>
 </div>
 </div>
@@ -227,7 +243,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">Core Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-core:1.4.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-core:1.5.0'
 }</code></pre>
 </div>
 </div>
@@ -235,7 +251,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">Jackson Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-jackson:1.4.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-jackson:1.5.0'
 }</code></pre>
 </div>
 </div>
@@ -243,7 +259,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">JSON Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-json:1.4.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-json:1.5.0'
 }</code></pre>
 </div>
 </div>
@@ -251,7 +267,7 @@ may include the following snippet in <code>build.gradle</code></p>
 <div class="title">YAML Support</div>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy">dependencies {
-    compile 'org.codehaus.griffon.plugins:griffon-preferences-yaml:1.4.0'
+    compile 'org.codehaus.griffon.plugins:griffon-preferences-yaml:1.5.0'
 }</code></pre>
 </div>
 </div>
@@ -270,7 +286,7 @@ snippet before the <code>&lt;build&gt;</code> element</p>
         <span class="tag">&lt;dependency&gt;</span>
             <span class="tag">&lt;groupId&gt;</span>org.codehaus.griffon.plugins<span class="tag">&lt;/groupId&gt;</span>
             <span class="tag">&lt;artifactId&gt;</span>griffon-preferences-plugin<span class="tag">&lt;/artifactId&gt;</span>
-            <span class="tag">&lt;version&gt;</span>1.4.0<span class="tag">&lt;/version&gt;</span>
+            <span class="tag">&lt;version&gt;</span>1.5.0<span class="tag">&lt;/version&gt;</span>
             <span class="tag">&lt;type&gt;</span>pom<span class="tag">&lt;/type&gt;</span>
             <span class="tag">&lt;scope&gt;</span>import<span class="tag">&lt;/scope&gt;</span>
         <span class="tag">&lt;/dependency&gt;</span>
@@ -425,7 +441,7 @@ You must define a binding for Jackson&#8217;s <code>com.fasterxml.jackson.databi
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.4.0<br>
+Version 1.5.0<br>
 Last updated 2014-10-11 03:54:07 +02:00
 </div>
 </div>
