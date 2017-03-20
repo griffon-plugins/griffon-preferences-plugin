@@ -45,7 +45,7 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     @Nonnull
     @Override
     protected String resolveExtension() {
-        return ".json";
+        return ".yaml";
     }
 
     @Nonnull
