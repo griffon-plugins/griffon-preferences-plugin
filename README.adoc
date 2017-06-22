@@ -9,6 +9,11 @@ image:https://api.bintray.com/packages/griffon/griffon-plugins/{project-name}/im
 
 ---
 
+image:https://img.shields.io/gitter/room/griffon/griffon.js.svg[link="https://gitter.im/griffon/griffon]
+image:https://img.shields.io/badge/donations-Patreon-orange.svg[https://www.patreon.com/user?u=6609318]
+
+---
+
 Provides a platform agnostic preferences facility, heavily influenced by JDK's
 http://docs.oracle.com/javase/7/docs/api/java/util/prefs/Preferences.html[java.util.prefs.Preferences, window="_blank"].
 Preferences represent a hierarchical data structure that can be persisted across different running sessions.
