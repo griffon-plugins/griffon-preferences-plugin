@@ -52,7 +52,7 @@ class PreferencesTest {
     private PreferencesPersistor preferencesPersistor
 
     @Before
-    public void setup() {
+    void setup() {
         ((InMemoryPreferencesPersistor) preferencesPersistor).map.putAll(
             [
                 com: [
