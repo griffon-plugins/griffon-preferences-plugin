@@ -93,11 +93,11 @@ bintray {
         version {
             name = project.version
             vcsTag = 'griffon-preferences-plugin'
-            mavenCentralSync {
+            /*mavenCentralSync {
                 sync = true
                 user = project.mavenUsername
                 password = project.mavenPassword
-            }
+            }*/
         }
     }
 }
