@@ -38,6 +38,8 @@ ext {
     buildRevision = versioning.info.commit
     buildCreatedBy = "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})".toString()
 }
+if (!project.hasProperty('mavenUsername')) ext.mavenUsername = ''
+if (!project.hasProperty('mavenPassword')) ext.mavenPassword = ''
 
 allprojects {
     apply plugin: 'base'
