@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.7'
         classpath 'com.bmuschko:gradle-java2html-plugin:2.0'
     }
 }
@@ -67,11 +67,11 @@ task apiDocs(type: Javadoc, dependsOn: copyDocs) {
     options.windowTitle = "${pluginBaseName} ${project.version}"
     options.docTitle    = "${pluginBaseName} ${project.version}"
     options.footer      = project.javadocFooter
-    options.links       = ['http://www.slf4j.org/apidocs/',
-                           'http://junit.org/junit4/javadoc/latest/',
-                           'http://aalmiray.github.io/jsr-305/apidocs/',
-                           'http://javax-inject.github.io/javax-inject/api/',
-                           'http://docs.oracle.com/javase/8/docs/api/',
+    options.links       = ['https://www.slf4j.org/apidocs/',
+                           'https://junit.org/junit4/javadoc/latest/',
+                           'https://aalmiray.github.io/jsr-305/apidocs/',
+                           'https://javax-inject.github.io/javax-inject/api/',
+                           'https://docs.oracle.com/javase/8/docs/api/',
                            "http://griffon-framework.org/guide/${griffonVersion}/api/".toString()]
 
     doLast { task ->

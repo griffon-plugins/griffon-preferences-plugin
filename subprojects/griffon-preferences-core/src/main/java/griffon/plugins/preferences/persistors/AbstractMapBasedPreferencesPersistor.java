@@ -21,16 +21,11 @@ import griffon.core.env.Metadata;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
-import griffon.plugins.preferences.PreferencesPersistor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.beans.PropertyEditor;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,80 +36,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * @author Andres Almiray
  */
-public abstract class AbstractMapBasedPreferencesPersistor implements PreferencesPersistor {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractMapBasedPreferencesPersistor.class);
-    public static final String KEY_PREFERENCES_PERSISTOR_LOCATION = "preferences.persistor.location";
-    public static final String DEFAULT_EXTENSION = ".prefs";
-
-    protected final GriffonApplication application;
-
+public abstract class AbstractMapBasedPreferencesPersistor extends AbstractPreferencesPersistor {
     @Inject
-    protected Metadata metadata;
-
-    @Inject
-    public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application) {
-        this.application = requireNonNull(application, "Argument 'application' cannot ne null");
-    }
-
-    @Nonnull
-    protected InputStream inputStream() throws IOException {
-        File file = resolveFile(resolvePreferencesFileName());
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Reading preferences from " + file.getAbsolutePath());
-        }
-        return new FileInputStream(file);
-    }
-
-    @Nonnull
-    protected OutputStream outputStream() throws IOException {
-        File file = resolveFile(resolvePreferencesFileName());
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Writing preferences to " + file.getAbsolutePath());
-        }
-        return new FileOutputStream(file);
-    }
-
-    @Nonnull
-    @SuppressWarnings("ConstantConditions")
-    protected String resolvePreferencesFileName() {
-        String defaultLocation = System.getProperty("user.home") +
-            File.separator + "." +
-            metadata.getApplicationName() +
-            File.separator +
-            "preferences" +
-            File.separator +
-            "default" +
-            resolveExtension();
-        return application.getConfiguration().getAsString(
-            KEY_PREFERENCES_PERSISTOR_LOCATION,
-            defaultLocation);
-    }
-
-    @Nonnull
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    protected File resolveFile(@Nonnull String fileName) {
-        File file = new File(fileName);
-        if (!file.isAbsolute()) {
-            file = new File(System.getProperty("user.home") +
-                File.separator + "." +
-                metadata.getApplicationName() +
-                File.separator +
-                "preferences" +
-                File.separator +
-                fileName);
-        }
-        if (!file.exists()) file.getParentFile().mkdirs();
-        return file;
-    }
-
-    @Nonnull
-    protected String resolveExtension() {
-        return DEFAULT_EXTENSION;
+    public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+        super(application, metadata);
     }
 
     @Nonnull
@@ -164,11 +92,11 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
         }
     }
 
-    protected void writeTo(PreferencesNode node, Map<String, Object> map) {
+    protected void writeTo(@Nonnull PreferencesNode node, @Nonnull Map<String, Object> map) {
         for (String key : node.keys()) {
             Object value = node.getAt(key);
             if (value != null) {
-                map.put(key, convertValue(value));
+                map.put(key, convertToWritableValue(value));
             }
         }
         for (Map.Entry<String, PreferencesNode> child : node.children().entrySet()) {
@@ -178,7 +106,8 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
         }
     }
 
-    protected Object convertValue(Object value) {
+    @Nullable
+    protected Object convertToWritableValue(@Nullable Object value) {
         if (value == null ||
             value instanceof Boolean ||
             value instanceof Number ||
@@ -192,28 +121,33 @@ public abstract class AbstractMapBasedPreferencesPersistor implements Preference
             for (Object key : source.keySet()) {
                 Object val = source.get(key);
                 if (val != null) {
-                    tmp.put(String.valueOf(key), convertValue(val));
+                    tmp.put(String.valueOf(key), convertToWritableValue(val));
                 }
             }
             return tmp;
         } else if (value instanceof Collection) {
             List<Object> tmp = new ArrayList<>();
-            List source = (List) value;
+            Collection source = (Collection) value;
             for (Object val : source) {
-                tmp.add(convertValue(val));
+                tmp.add(convertToWritableValue(val));
             }
             return tmp;
         } else if (value.getClass().isArray()) {
             List<Object> tmp = new ArrayList<>();
             Object[] source = (Object[]) value; // blindly cast to Object[]
             for (Object val : source) {
-                tmp.add(convertValue(val));
+                tmp.add(convertToWritableValue(val));
             }
             return tmp;
         } else {
-            PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(value.getClass());
-            propertyEditor.setValue(value);
-            return propertyEditor.getAsText();
+            return defaultConvertToWritableValue(value);
         }
+    }
+
+    @Nullable
+    protected Object defaultConvertToWritableValue(@Nonnull Object value) {
+        PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(value.getClass());
+        propertyEditor.setValue(value);
+        return propertyEditor.getAsText();
     }
 }

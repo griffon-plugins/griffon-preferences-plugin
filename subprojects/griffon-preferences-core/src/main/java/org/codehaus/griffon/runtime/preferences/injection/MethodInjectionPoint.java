@@ -18,6 +18,7 @@ package org.codehaus.griffon.runtime.preferences.injection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -28,13 +29,14 @@ import static griffon.core.GriffonExceptionHandler.sanitize;
  */
 public class MethodInjectionPoint extends InjectionPoint {
     private static final Logger LOG = LoggerFactory.getLogger(FieldInjectionPoint.class);
+    private static final String CANNOT_GET_VALUE_ON_METHOD_OF_INSTANCE = "Cannot get value on method {}() of instance {}";
 
     public final Method readMethod;
     public final Method writeMethod;
     public final Class type;
 
-    public MethodInjectionPoint(Method readMethod, Method writeMethod, String fqName, String path, String format) {
-        super(fqName, path, format);
+    public MethodInjectionPoint(Method readMethod, Method writeMethod, String fqName, String path, String format, Class<? extends PropertyEditor> editor) {
+        super(fqName, path, format, editor);
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
         this.type = readMethod.getReturnType();
@@ -45,7 +47,7 @@ public class MethodInjectionPoint extends InjectionPoint {
             writeMethod.invoke(instance, value);
         } catch (IllegalAccessException | InvocationTargetException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("Cannot set value on method " + fqName + "() of instance " + instance, sanitize(e));
+                LOG.warn(CANNOT_GET_VALUE_ON_METHOD_OF_INSTANCE, fqName, instance, sanitize(e));
             }
         }
     }
@@ -55,7 +57,7 @@ public class MethodInjectionPoint extends InjectionPoint {
             return readMethod.invoke(instance);
         } catch (IllegalAccessException | InvocationTargetException e) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("Cannot get value on method " + fqName + "() of instance " + instance, sanitize(e));
+                LOG.warn(CANNOT_GET_VALUE_ON_METHOD_OF_INSTANCE, fqName, instance, sanitize(e));
             }
         }
         return null;
@@ -74,6 +76,7 @@ public class MethodInjectionPoint extends InjectionPoint {
         sb.append(", fqName='").append(fqName).append('\'');
         sb.append(", path='").append(path).append('\'');
         sb.append(", format='").append(format).append('\'');
+        sb.append(", editor='").append(editor).append('\'');
         sb.append('}');
         return sb.toString();
     }

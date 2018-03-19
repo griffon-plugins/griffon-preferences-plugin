@@ -17,6 +17,7 @@ package griffon.plugins.preferences.persistors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import griffon.core.GriffonApplication;
+import griffon.core.env.Metadata;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
@@ -40,8 +41,8 @@ public class JacksonPreferencesPersistor extends AbstractMapBasedPreferencesPers
     private String extension;
 
     @Inject
-    public JacksonPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull ObjectMapper objectMapper) {
-        super(application);
+    public JacksonPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata, @Nonnull ObjectMapper objectMapper) {
+        super(application, metadata);
         this.objectMapper = requireNonNull(objectMapper, "Argument 'objectMapper' must not be null");
         String formatName = objectMapper.getFactory().getFormatName();
         extension = "." + (isBlank(formatName) ? "bin" : formatName.toLowerCase());
@@ -56,7 +57,9 @@ public class JacksonPreferencesPersistor extends AbstractMapBasedPreferencesPers
     @Nonnull
     @SuppressWarnings("unchecked")
     public Preferences read(@Nonnull PreferencesManager preferencesManager) throws IOException {
-        Map<String, Object> map = doRead(inputStream());
+        InputStream inputStream = inputStream();
+        Map<String, Object> map = doRead(inputStream);
+        inputStream.close();
         PreferencesNode node = preferencesManager.getPreferences().getRoot();
         readInto(map, node);
 

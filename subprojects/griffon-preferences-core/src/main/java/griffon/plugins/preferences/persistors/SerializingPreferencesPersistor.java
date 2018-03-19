@@ -16,6 +16,7 @@
 package griffon.plugins.preferences.persistors;
 
 import griffon.core.GriffonApplication;
+import griffon.core.env.Metadata;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -32,8 +33,8 @@ import java.util.Map;
  */
 public class SerializingPreferencesPersistor extends AbstractMapBasedPreferencesPersistor {
     @Inject
-    public SerializingPreferencesPersistor(@Nonnull GriffonApplication application) {
-        super(application);
+    public SerializingPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+        super(application, metadata);
     }
 
     @Nonnull

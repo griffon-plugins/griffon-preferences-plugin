@@ -15,6 +15,7 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -24,13 +25,13 @@ import java.util.Arrays;
 public class FieldPreferenceDescriptor extends PreferenceDescriptor {
     public final Field field;
 
-    public FieldPreferenceDescriptor(Field field, String fqName, String path, String[] args, String defaultValue, String format) {
-        super(fqName, path, args, defaultValue, format);
+    public FieldPreferenceDescriptor(Field field, String fqName, String path, String[] args, String defaultValue, String format, Class<? extends PropertyEditor> editor) {
+        super(fqName, path, args, defaultValue, format, editor);
         this.field = field;
     }
 
     public InjectionPoint asInjectionPoint() {
-        return new FieldInjectionPoint(field, fqName, path, format);
+        return new FieldInjectionPoint(field, fqName, path, format, editor);
     }
 
     @Override
@@ -42,6 +43,7 @@ public class FieldPreferenceDescriptor extends PreferenceDescriptor {
         sb.append(", args=").append(Arrays.toString(args));
         sb.append(", defaultValue='").append(defaultValue).append('\'');
         sb.append(", format='").append(format).append('\'');
+        sb.append(", editor='").append(editor).append('\'');
         sb.append('}');
         return sb.toString();
     }

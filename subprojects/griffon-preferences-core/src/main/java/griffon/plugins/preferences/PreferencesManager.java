@@ -31,6 +31,13 @@ public interface PreferencesManager {
     Preferences getPreferences();
 
     /**
+     * Loads a matching {@code PreferencesNode} into the target instance.
+     *
+     * @param instance an object with fields/properties annotated with {@code @Preference}.
+     */
+    void injectPreferences(@Nonnull Object instance);
+
+    /**
      * <p>Merges all fields/properties annotated with {@code @Preference} to their
      * corresponding {@code PreferencesNode} within the contained {@code Preferences}.</p>
      * <p>Values will be transformed their literal representation if a <code>format</code>

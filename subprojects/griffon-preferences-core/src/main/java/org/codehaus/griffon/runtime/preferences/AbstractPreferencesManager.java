@@ -21,6 +21,7 @@ import griffon.core.GriffonApplication;
 import griffon.core.RunnableWithArgs;
 import griffon.core.editors.ExtendedPropertyEditor;
 import griffon.core.editors.PropertyEditorResolver;
+import griffon.exceptions.GriffonException;
 import griffon.plugins.preferences.KeyResolutionStrategy;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.NodeChangeListener;
@@ -72,6 +73,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     private static final String ERROR_INSTANCE_NULL = "Argument 'instance' must not be null";
     private static final String ERROR_TYPE_NULL = "Argument 'type' must not be null";
     private static final String ERROR_VALUE_NULL = "Argument 'value' must not be null";
+    private static final String ERROR_EDITOR_CLASS_NULL = "Argumnet 'editor' must not be null";
 
     @Inject
     protected GriffonApplication application;
@@ -135,7 +137,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
 
                         if (null != value) {
                             if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
-                                value = convertValue(injectionPoint.getType(), value, injectionPoint.format);
+                                value = convertValue(injectionPoint.getType(), value, injectionPoint.format, injectionPoint.editor);
                             }
                         }
                         injectionPoint.setValue(instanceContainer.instance(), value);
@@ -145,6 +147,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         });
     }
 
+    @Override
     public void save(@Nonnull Object instance) {
         requireNonNull(instance, ERROR_INSTANCE_NULL);
 
@@ -158,7 +161,8 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         doSavePreferences(instance, descriptors);
     }
 
-    protected void injectPreferences(@Nonnull Object instance) {
+    @Override
+    public void injectPreferences(@Nonnull Object instance) {
         requireNonNull(instance, ERROR_INSTANCE_NULL);
 
         Map<String, PreferenceDescriptor> descriptors = new LinkedHashMap<>();
@@ -195,14 +199,16 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             if (null == annotation) { continue; }
 
             String propertyName = pd.getName();
-            Class resolvedClass = resolveclass(instanceClass, writeMethod.getDeclaringClass());
+            Class<?> resolvedClass = resolveClass(instanceClass, writeMethod.getDeclaringClass());
             String fqName = resolvedClass.getName().replace('$', '.') + "." + writeMethod.getName();
             String path = "/" + resolvedClass.getName().replace('$', '/').replace('.', '/') + "." + propertyName;
             String key = annotation.key();
             String[] args = annotation.args();
             String defaultValue = annotation.defaultValue();
+            defaultValue = Preference.NO_VALUE.equals(defaultValue) ? null : defaultValue;
             String resolvedPath = !isBlank(key) ? key : path;
             String format = annotation.format();
+            Class<? extends PropertyEditor> editor = annotation.editor();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Property " + propertyName +
@@ -213,7 +219,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                     "', format='" + format +
                     "'] is marked for preference injection.");
             }
-            descriptors.put(propertyName, new MethodPreferenceDescriptor(readMethod, writeMethod, fqName, resolvedPath, args, defaultValue, format));
+            descriptors.put(propertyName, new MethodPreferenceDescriptor(readMethod, writeMethod, fqName, resolvedPath, args, defaultValue, format, editor));
         }
 
         for (Field field : currentClass.getDeclaredFields()) {
@@ -223,14 +229,16 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             final Preference annotation = field.getAnnotation(Preference.class);
             if (null == annotation) { continue; }
 
-            Class resolvedClass = resolveclass(instanceClass, field.getDeclaringClass());
+            Class<?> resolvedClass = resolveClass(instanceClass, field.getDeclaringClass());
             String fqFieldName = resolvedClass.getName().replace('$', '.') + "." + field.getName();
             String path = "/" + resolvedClass.getName().replace('$', '/').replace('.', '/') + "." + field.getName();
             String key = annotation.key();
             String[] args = annotation.args();
             String defaultValue = annotation.defaultValue();
+            defaultValue = Preference.NO_VALUE.equals(defaultValue) ? null : defaultValue;
             String resolvedPath = !isBlank(key) ? key : path;
             String format = annotation.format();
+            Class<? extends PropertyEditor> editor = annotation.editor();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Field " + fqFieldName +
@@ -242,12 +250,12 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                     "'] is marked for preference injection.");
             }
 
-            descriptors.put(field.getName(), new FieldPreferenceDescriptor(field, fqFieldName, resolvedPath, args, defaultValue, format));
+            descriptors.put(field.getName(), new FieldPreferenceDescriptor(field, fqFieldName, resolvedPath, args, defaultValue, format, editor));
         }
     }
 
     @Nonnull
-    protected Class resolveclass(@Nonnull Class instanceClass, @Nonnull Class declaringClass) {
+    protected Class<?> resolveClass(@Nonnull Class<?> instanceClass, @Nonnull Class<?> declaringClass) {
         switch (keyResolutionStrategy) {
             case INSTANCE_CLASS:
                 return instanceClass;
@@ -260,11 +268,14 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     protected void doPreferencesInjection(@Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
         for (PreferenceDescriptor descriptor : descriptors.values()) {
             Object value = resolvePreference(descriptor.path, descriptor.args, descriptor.defaultValue);
-            InjectionPoint injectionPoint = descriptor.asInjectionPoint();
-            if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
-                value = convertValue(injectionPoint.getType(), value, descriptor.format);
+
+            if (value != null) {
+                InjectionPoint injectionPoint = descriptor.asInjectionPoint();
+                if (!isNoopPropertyEditor(descriptor.editor) || !injectionPoint.getType().isAssignableFrom(value.getClass())) {
+                    value = convertValue(injectionPoint.getType(), value, descriptor.format, descriptor.editor);
+                }
+                injectionPoint.setValue(instance, value);
             }
-            injectionPoint.setValue(instance, value);
         }
     }
 
@@ -275,11 +286,12 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             String[] parsedPath = parsePath(descriptor.path);
             final PreferencesNode node = getPreferences().node(parsedPath[0]);
             final String key = parsedPath[1];
+
             if (value != null) {
-                // Convert value only if descriptor.format is not null
-                if (!isBlank(descriptor.format)) {
-                    PropertyEditor propertyEditor = resolvePropertyEditor(value.getClass(), descriptor.format);
-                    if (propertyEditor != null) {
+                // Convert value only if descriptor.format is not null or there's a custom editor
+                if (!isNoopPropertyEditor(descriptor.editor) || !isBlank(descriptor.format)) {
+                    PropertyEditor propertyEditor = resolvePropertyEditor(value.getClass(), descriptor.format, descriptor.editor);
+                    if (!isNoopPropertyEditor(propertyEditor.getClass())) {
                         propertyEditor.setValue(value);
                         value = propertyEditor.getAsText();
                     }
@@ -291,18 +303,22 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         }
     }
 
-    protected Object resolvePreference(@Nonnull String path, @Nonnull String[] args, @Nonnull String defaultValue) {
+    @Nullable
+    protected Object resolvePreference(@Nonnull String path, @Nonnull String[] args, @Nullable String defaultValue) {
         String[] parsedPath = parsePath(path);
         final PreferencesNode node = getPreferences().node(parsedPath[0]);
         final String key = parsedPath[1];
+
         if (node.containsKey(key)) {
             return evalPreferenceWithArguments(node.getAt(key), args);
-        } else {
+        } else if (defaultValue != null) {
             node.putAt(key, defaultValue);
             return defaultValue;
         }
+        return null;
     }
 
+    @Nullable
     protected Object evalPreferenceWithArguments(@Nullable Object value, @Nullable Object[] args) {
         if (value instanceof CallableWithArgs) {
             CallableWithArgs callable = (CallableWithArgs) value;
@@ -313,6 +329,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         return value;
     }
 
+    @Nonnull
     protected String formatPreferenceValue(@Nonnull String message, @Nullable Object[] args) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Formatting message={} args={}", message, Arrays.toString(args));
@@ -322,11 +339,12 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     }
 
     @Nonnull
-    protected Object convertValue(@Nonnull Class<?> type, @Nonnull Object value, @Nullable String format) {
+    protected Object convertValue(@Nonnull Class<?> type, @Nonnull Object value, @Nullable String format, @Nonnull Class<? extends PropertyEditor> editor) {
         requireNonNull(type, ERROR_TYPE_NULL);
         requireNonNull(value, ERROR_VALUE_NULL);
-        PropertyEditor propertyEditor = resolvePropertyEditor(type, format);
-        if (propertyEditor instanceof PropertyEditorResolver.NoopPropertyEditor) { return value; }
+
+        PropertyEditor propertyEditor = resolvePropertyEditor(type, format, editor);
+        if (isNoopPropertyEditor(propertyEditor.getClass())) { return value; }
         if (value instanceof CharSequence) {
             propertyEditor.setAsText(String.valueOf(value));
         } else {
@@ -336,10 +354,22 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     }
 
     @Nonnull
-    protected PropertyEditor resolvePropertyEditor(@Nonnull Class<?> type, @Nullable String format) {
+    protected PropertyEditor resolvePropertyEditor(@Nonnull Class<?> type, @Nullable String format, @Nonnull Class<? extends PropertyEditor> editor) {
         requireNonNull(type, ERROR_TYPE_NULL);
-        PropertyEditor propertyEditor = findEditor(type);
-        if (propertyEditor instanceof ExtendedPropertyEditor) {
+        requireNonNull(editor, ERROR_EDITOR_CLASS_NULL);
+
+        PropertyEditor propertyEditor = null;
+        if (isNoopPropertyEditor(editor)) {
+            propertyEditor = findEditor(type);
+        } else {
+            try {
+                propertyEditor = editor.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new GriffonException("Could not instantiate editor with " + editor, e);
+            }
+        }
+
+        if (propertyEditor instanceof ExtendedPropertyEditor && !isBlank(format)) {
             ((ExtendedPropertyEditor) propertyEditor).setFormat(format);
         }
         return propertyEditor;
@@ -352,5 +382,9 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         String tail = split > 0 ? path.substring(split + 1) : null;
         head = head.replace('.', '/');
         return new String[]{head, tail};
+    }
+
+    protected boolean isNoopPropertyEditor(@Nonnull Class<? extends PropertyEditor> editor) {
+        return PropertyEditorResolver.NoopPropertyEditor.class.isAssignableFrom(editor);
     }
 }

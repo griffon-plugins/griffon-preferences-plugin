@@ -15,6 +15,8 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
+import java.beans.PropertyEditor;
+
 /**
  * @author Andres Almiray
  */
@@ -24,13 +26,15 @@ public abstract class PreferenceDescriptor {
     public final String[] args;
     public final String defaultValue;
     public final String format;
+    public final Class<? extends PropertyEditor> editor;
 
-    public PreferenceDescriptor(String fqName, String path, String[] args, String defaultValue, String format) {
+    public PreferenceDescriptor(String fqName, String path, String[] args, String defaultValue, String format, Class<? extends PropertyEditor> editor) {
         this.fqName = fqName;
         this.path = path;
         this.args = args;
         this.defaultValue = defaultValue;
         this.format = format;
+        this.editor = editor;
     }
 
     public abstract InjectionPoint asInjectionPoint();

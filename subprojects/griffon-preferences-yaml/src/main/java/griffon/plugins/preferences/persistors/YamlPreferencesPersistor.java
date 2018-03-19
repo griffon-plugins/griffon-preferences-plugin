@@ -16,6 +16,7 @@
 package griffon.plugins.preferences.persistors;
 
 import griffon.core.GriffonApplication;
+import griffon.core.env.Metadata;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
@@ -38,8 +39,8 @@ import java.util.Map;
  */
 public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersistor {
     @Inject
-    public YamlPreferencesPersistor(@Nonnull GriffonApplication application) {
-        super(application);
+    public YamlPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+        super(application, metadata);
     }
 
     @Nonnull
@@ -51,7 +52,9 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     @Nonnull
     @SuppressWarnings("unchecked")
     public Preferences read(@Nonnull PreferencesManager preferencesManager) throws IOException {
-        Map<String, Object> yaml = doRead(inputStream());
+        InputStream inputStream = inputStream();
+        Map<String, Object> yaml = doRead(inputStream);
+        inputStream.close();
         PreferencesNode node = preferencesManager.getPreferences().getRoot();
         readInto(yaml, node);
 
@@ -102,16 +105,26 @@ public class YamlPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     @SuppressWarnings("unchecked")
     protected Map<String, Object> doRead(@Nonnull InputStream inputStream) throws IOException {
         if (inputStream.available() > 0) {
-            return new Yaml().loadAs(inputStream, Map.class);
+            return setupYamlForRead().loadAs(inputStream, Map.class);
         }
         return Collections.emptyMap();
     }
 
     @Override
     protected void write(@Nonnull Map<String, Object> map, @Nonnull OutputStream outputStream) throws IOException {
-        Yaml yaml = new Yaml();
         OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-        writer.write(yaml.dumpAsMap(map));
+        writer.write(setupYamlForWrite().dumpAsMap(map));
         writer.flush();
+        writer.close();
+    }
+
+    @Nonnull
+    protected Yaml setupYamlForRead() {
+        return new Yaml();
+    }
+
+    @Nonnull
+    protected Yaml setupYamlForWrite() {
+        return new Yaml();
     }
 }

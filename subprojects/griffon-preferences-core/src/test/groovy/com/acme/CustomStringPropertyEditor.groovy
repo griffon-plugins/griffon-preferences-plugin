@@ -15,23 +15,19 @@
  */
 package com.acme
 
-import griffon.core.artifact.GriffonModel
-import griffon.metadata.ArtifactProviderFor
-import griffon.plugins.preferences.Preference
-import griffon.plugins.preferences.PreferencesAware
+import java.beans.PropertyEditorSupport
 
-@PreferencesAware
-@ArtifactProviderFor(GriffonModel)
-class SampleModel {
-    @Preference
-    String pstring
+/**
+ * @author Andres Almiray
+ */
+class CustomStringPropertyEditor extends PropertyEditorSupport {
+    @Override
+    String getAsText() {
+        return '*' + super.getAsText() + '*'
+    }
 
-    @Preference(defaultValue = 'true')
-    boolean pboolean
-
-    @Preference(defaultValue = '01/01/2000', format = 'dd/MM/yyyy')
-    Date pdate
-
-    @Preference(defaultValue = '*value*', editor = CustomStringPropertyEditor)
-    String customString
+    @Override
+    void setAsText(String text) throws IllegalArgumentException {
+        setValue(text[1..-2].toString())
+    }
 }

@@ -17,6 +17,7 @@ package org.codehaus.griffon.runtime.preferences
 
 import com.acme.SampleModel
 import griffon.core.GriffonApplication
+import griffon.core.env.Metadata
 import griffon.core.injection.Module
 import griffon.core.test.GriffonUnitRule
 import griffon.plugins.preferences.PreferencesManager
@@ -82,6 +83,7 @@ class TypeFormattingTest {
         assert model.pstring == 'string'
         assert model.pboolean
         assert model.pdate == january2K
+        assert model.customString == 'value'
 
         // when:
         preferencesManager.preferences.node(SampleModel)['pstring'] = 'STRING'
@@ -102,6 +104,7 @@ class TypeFormattingTest {
         model.pstring = 'STRING'
         model.pboolean = false
         model.pdate = new SimpleDateFormat('dd/MM/yyyy').parse('12/12/2012')
+        model.customString = 'griffon'
         preferencesManager.save(model)
         preferencesPersistor.write(preferencesManager)
 
@@ -110,14 +113,15 @@ class TypeFormattingTest {
         assert 'STRING' == getConfigValueAsString(map, 'com.acme.SampleModel.pstring')
         assert !getConfigValueAsBoolean(map, 'com.acme.SampleModel.pboolean')
         assert '12/12/2012' == getConfigValueAsString(map, 'com.acme.SampleModel.pdate')
+        assert '*griffon*' == getConfigValueAsString(map, 'com.acme.SampleModel.customString')
     }
 
     private static class InMemoryPreferencesPersistor extends AbstractMapBasedPreferencesPersistor {
         final Map<String, Object> map = [:]
 
         @Inject
-        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application) {
-            super(application)
+        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+            super(application, metadata)
         }
 
         @Nonnull

@@ -16,6 +16,7 @@
 package griffon.plugins.preferences.persistors;
 
 import griffon.core.GriffonApplication;
+import griffon.core.env.Metadata;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
@@ -39,8 +40,8 @@ import java.util.Map;
  */
 public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersistor {
     @Inject
-    public JsonPreferencesPersistor(@Nonnull GriffonApplication application) {
-        super(application);
+    public JsonPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+        super(application, metadata);
     }
 
     @Nonnull
@@ -52,7 +53,9 @@ public class JsonPreferencesPersistor extends AbstractMapBasedPreferencesPersist
     @Nonnull
     @SuppressWarnings("unchecked")
     public Preferences read(@Nonnull PreferencesManager preferencesManager) throws IOException {
-        JSONObject json = doRead(inputStream());
+        InputStream inputStream = inputStream();
+        JSONObject json = doRead(inputStream);
+        inputStream.close();
         PreferencesNode node = preferencesManager.getPreferences().getRoot();
         readInto(json, node);
 

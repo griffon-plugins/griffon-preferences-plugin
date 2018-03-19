@@ -15,6 +15,8 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
+import java.beans.PropertyEditor;
+
 /**
  * @author Andres Almiray
  */
@@ -22,11 +24,13 @@ public abstract class InjectionPoint {
     public final String fqName;
     public final String path;
     public final String format;
+    public final Class<? extends PropertyEditor> editor;
 
-    public InjectionPoint(String fqName, String path, String format) {
+    public InjectionPoint(String fqName, String path, String format, Class<? extends PropertyEditor> editor) {
         this.fqName = fqName;
         this.path = path;
         this.format = format;
+        this.editor = editor;
     }
 
     public abstract void setValue(Object instance, Object value);

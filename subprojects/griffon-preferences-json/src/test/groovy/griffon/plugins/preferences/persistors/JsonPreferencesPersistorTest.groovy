@@ -17,6 +17,7 @@ package griffon.plugins.preferences.persistors
 
 import com.acme.SampleModel
 import griffon.core.GriffonApplication
+import griffon.core.env.Metadata
 import griffon.core.injection.Module
 import griffon.core.test.GriffonUnitRule
 import griffon.inject.DependsOn
@@ -116,8 +117,8 @@ class JsonPreferencesPersistorTest {
         String content = '{}'
 
         @Inject
-        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application) {
-            super(application)
+        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+            super(application, metadata)
         }
 
         @Nonnull

@@ -18,6 +18,7 @@ package griffon.plugins.preferences.persistors
 import com.acme.SampleModel
 import com.fasterxml.jackson.databind.ObjectMapper
 import griffon.core.GriffonApplication
+import griffon.core.env.Metadata
 import griffon.core.injection.Module
 import griffon.core.test.GriffonUnitRule
 import griffon.inject.DependsOn
@@ -124,8 +125,8 @@ class JacksonPreferencesPersistorTest {
         byte[] content = [] as byte[]
 
         @Inject
-        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull ObjectMapper objectMapper) {
-            super(application, objectMapper)
+        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata, @Nonnull ObjectMapper objectMapper) {
+            super(application, metadata, objectMapper)
         }
 
         @Nonnull
@@ -164,7 +165,7 @@ class JacksonPreferencesPersistorTest {
 
     private static class ObjectMapperProvider implements Provider<ObjectMapper> {
         @Override
-        public ObjectMapper get() {
+        ObjectMapper get() {
             ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory())
             objectMapper.registerSubtypes(SampleModel)
             return objectMapper

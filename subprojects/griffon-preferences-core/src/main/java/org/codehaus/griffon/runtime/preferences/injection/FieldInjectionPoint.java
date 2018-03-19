@@ -19,6 +19,7 @@ import griffon.exceptions.InstanceMethodInvocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 
 import static griffon.core.GriffonExceptionHandler.sanitize;
@@ -35,11 +36,12 @@ public class FieldInjectionPoint extends InjectionPoint {
 
     private static final String ERROR_INSTANCE_NULL = "Argument 'instance' must not be null";
     private static final String ERROR_FIELD_NULL = "Argument 'field' must not be null";
+    private static final String CANNOT_SET_VALUE_ON_FIELD_OF_INSTANCE = "Cannot set value on field {} of instance {}";
 
     public final Field field;
 
-    public FieldInjectionPoint(Field field, String fqName, String path, String format) {
-        super(fqName, path, format);
+    public FieldInjectionPoint(Field field, String fqName, String path, String format, Class<? extends PropertyEditor> editor) {
+        super(fqName, path, format, editor);
         this.field = field;
     }
 
@@ -54,7 +56,7 @@ public class FieldInjectionPoint extends InjectionPoint {
                 field.setAccessible(true);
                 field.set(instance, value);
             } catch (IllegalAccessException e) {
-                LOG.warn("Cannot set value on field {} of instance {}", fqName, instance, sanitize(e));
+                LOG.warn(CANNOT_SET_VALUE_ON_FIELD_OF_INSTANCE, fqName, instance, sanitize(e));
             }
         }
     }
@@ -68,7 +70,7 @@ public class FieldInjectionPoint extends InjectionPoint {
                 field.setAccessible(true);
                 return field.get(instance);
             } catch (IllegalAccessException e) {
-                LOG.warn("Cannot set value on field {} of instance {}", fqName, instance, sanitize(e));
+                LOG.warn(CANNOT_SET_VALUE_ON_FIELD_OF_INSTANCE, fqName, instance, sanitize(e));
             }
         }
         return null;
@@ -85,6 +87,7 @@ public class FieldInjectionPoint extends InjectionPoint {
         sb.append(", fqName='").append(fqName).append('\'');
         sb.append(", path='").append(path).append('\'');
         sb.append(", format='").append(format).append('\'');
+        sb.append(", editor='").append(editor).append('\'');
         sb.append('}');
         return sb.toString();
     }

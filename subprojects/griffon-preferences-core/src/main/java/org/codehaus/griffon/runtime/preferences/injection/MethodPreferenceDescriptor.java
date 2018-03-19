@@ -15,6 +15,7 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -25,14 +26,14 @@ public class MethodPreferenceDescriptor extends PreferenceDescriptor {
     public final Method readMethod;
     public final Method writeMethod;
 
-    public MethodPreferenceDescriptor(Method readMethod, Method writeMethod, String fqName, String path, String[] args, String defaultValue, String format) {
-        super(fqName, path, args, defaultValue, format);
+    public MethodPreferenceDescriptor(Method readMethod, Method writeMethod, String fqName, String path, String[] args, String defaultValue, String format, Class<? extends PropertyEditor> editor) {
+        super(fqName, path, args, defaultValue, format, editor);
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
     }
 
     public InjectionPoint asInjectionPoint() {
-        return new MethodInjectionPoint(readMethod, writeMethod, fqName, path, format);
+        return new MethodInjectionPoint(readMethod, writeMethod, fqName, path, format, editor);
     }
 
     @Override
@@ -45,6 +46,7 @@ public class MethodPreferenceDescriptor extends PreferenceDescriptor {
         sb.append(", args=").append(Arrays.toString(args));
         sb.append(", defaultValue='").append(defaultValue).append('\'');
         sb.append(", format='").append(format).append('\'');
+        sb.append(", editor='").append(editor).append('\'');
         sb.append('}');
         return sb.toString();
     }

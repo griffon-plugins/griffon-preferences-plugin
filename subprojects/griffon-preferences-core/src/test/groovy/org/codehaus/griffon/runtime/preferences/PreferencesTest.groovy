@@ -20,6 +20,7 @@ import com.acme.PreferencesAwareModel
 import com.acme.ValueHolder
 import griffon.core.ApplicationEvent
 import griffon.core.GriffonApplication
+import griffon.core.env.Metadata
 import griffon.core.injection.Module
 import griffon.core.test.GriffonUnitRule
 import griffon.plugins.preferences.PreferencesManager
@@ -195,8 +196,8 @@ class PreferencesTest {
         final Map<String, Object> map = [:]
 
         @Inject
-        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application) {
-            super(application)
+        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
+            super(application, metadata)
         }
 
         @Nonnull
