@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +17,15 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
-import griffon.core.editors.PropertyEditorResolver;
+import griffon.annotations.core.Nonnull;
+import griffon.annotations.core.Nullable;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.PreferenceChangeEvent;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesNode;
 import griffon.util.TypeUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
-import java.beans.PropertyEditor;
+import javax.application.converter.Converter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,9 +42,9 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     private static final String ERROR_NODE_NAME_BLANK = "Argument 'nodeName' must not be null";
 
     protected final Object lock = new Object[0];
-    @GuardedBy("lock")
+    // @GuardedBy("lock")
     protected final Map<String, Object> properties = new LinkedHashMap<>();
-    @GuardedBy("lock")
+    // @GuardedBy("lock")
     protected final Map<String, PreferencesNode> nodes = new LinkedHashMap<>();
 
     public DefaultPreferencesNode(@Nonnull Preferences preferences, @Nonnull PreferencesNode parent, @Nonnull String name) {
@@ -84,13 +84,8 @@ public class DefaultPreferencesNode extends AbstractPreferencesNode {
     public <T> T getConverted(@Nonnull String key, @Nonnull Class<T> type) {
         requireNonNull(type, ERROR_TYPE_NULL);
         Object value = getAt(key);
-        PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(type);
-        if (value instanceof CharSequence) {
-            propertyEditor.setAsText(String.valueOf(value));
-        } else {
-            propertyEditor.setValue(value);
-        }
-        return (T) propertyEditor.getValue();
+        Converter<T> converter = preferences.getConverterRegistry().findConverter(type);
+        return converter.fromObject(value);
     }
 
     @Nullable

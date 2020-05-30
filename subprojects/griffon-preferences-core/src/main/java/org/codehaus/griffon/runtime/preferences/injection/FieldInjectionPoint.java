@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +21,7 @@ import griffon.exceptions.InstanceMethodInvocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.beans.PropertyEditor;
+import javax.application.converter.Converter;
 import java.lang.reflect.Field;
 
 import static griffon.core.GriffonExceptionHandler.sanitize;
@@ -40,8 +42,8 @@ public class FieldInjectionPoint extends InjectionPoint {
 
     public final Field field;
 
-    public FieldInjectionPoint(Field field, String fqName, String path, String format, Class<? extends PropertyEditor> editor) {
-        super(fqName, path, format, editor);
+    public FieldInjectionPoint(Field field, String fqName, String path, String format, Class<? extends Converter<?>> converter) {
+        super(fqName, path, format, converter);
         this.field = field;
     }
 
@@ -87,7 +89,7 @@ public class FieldInjectionPoint extends InjectionPoint {
         sb.append(", fqName='").append(fqName).append('\'');
         sb.append(", path='").append(path).append('\'');
         sb.append(", format='").append(format).append('\'');
-        sb.append(", editor='").append(editor).append('\'');
+        sb.append(", converter='").append(converter).append('\'');
         sb.append('}');
         return sb.toString();
     }

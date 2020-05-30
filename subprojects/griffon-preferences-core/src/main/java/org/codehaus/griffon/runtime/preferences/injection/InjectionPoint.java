@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +17,7 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
-import java.beans.PropertyEditor;
+import javax.application.converter.Converter;
 
 /**
  * @author Andres Almiray
@@ -24,13 +26,13 @@ public abstract class InjectionPoint {
     public final String fqName;
     public final String path;
     public final String format;
-    public final Class<? extends PropertyEditor> editor;
+    public final Class<? extends Converter<?>> converter;
 
-    public InjectionPoint(String fqName, String path, String format, Class<? extends PropertyEditor> editor) {
+    public InjectionPoint(String fqName, String path, String format, Class<? extends Converter<?>> converter) {
         this.fqName = fqName;
         this.path = path;
         this.format = format;
-        this.editor = editor;
+        this.converter = converter;
     }
 
     public abstract void setValue(Object instance, Object value);

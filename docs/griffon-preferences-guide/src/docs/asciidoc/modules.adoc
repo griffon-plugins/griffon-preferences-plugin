@@ -1,0 +1,66 @@
+
+[[_modules]]
+= Modules
+:subproject-base: {rootdir}/subprojects/griffon-preferences-
+:java-source: /src/main/java/
+:package-base: org/codehaus/griffon/runtime/preferences
+:numbered:
+
+The following sections display all bindings per module. Use this information to
+successfully override a binding on your own modules or to troubleshoot a module
+binding if the wrong type has been applied by the Griffon runtime.
+
+== Preferences
+
+Module name: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}core{java-source}{package-base}/PreferencesModule.java[tags=bindings,indent=0]
+----
+
+== Preferences Jackson
+
+Module name: `preferences-jackson`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}jackson{java-source}{package-base}/jackson/PreferencesJacksonModule.java[tags=bindings,indent=0]
+----
+
+NOTE: You must define a binding for Jackson's `com.fasterxml.jackson.databind.ObjectMapper` type.
+
+== Preferences JSON
+
+Module name: `preferences-json`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}json{java-source}{package-base}/json/PreferencesJsonModule.java[tags=bindings,indent=0]
+----
+
+== Preferences TOML
+
+Module name: `preferences-toml`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}toml{java-source}{package-base}/toml/PreferencesTomlModule.java[tags=bindings,indent=0]
+----
+
+== Preferences YAML
+
+Module name: `preferences-yaml`
+
+Depends on: `preferences`
+
+[source,java,options="nowrap"]
+----
+include::{subproject-base}yaml{java-source}{package-base}/yaml/PreferencesYamlModule.java[tags=bindings,indent=0]
+----

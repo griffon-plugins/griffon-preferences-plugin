@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +17,8 @@
  */
 package griffon.plugins.preferences;
 
-import griffon.core.editors.PropertyEditorResolver;
-
-import java.beans.PropertyEditor;
+import javax.application.converter.Converter;
+import javax.application.converter.NoopConverter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,7 +32,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface Preference {
-    String NO_VALUE = "!!<<== NO_VALUE ==>>!!";
+    String NO_VALUE = "griffon.plugins.preferences.Preference.NO_VALUE";
 
     String key() default "";
 
@@ -41,5 +42,5 @@ public @interface Preference {
 
     String format() default "";
 
-    Class<? extends PropertyEditor> editor() default PropertyEditorResolver.NoopPropertyEditor.class;
+    Class<? extends Converter<?>> converter() default NoopConverter.class;
 }

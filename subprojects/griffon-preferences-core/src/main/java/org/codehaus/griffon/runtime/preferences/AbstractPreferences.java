@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +17,7 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
+import griffon.annotations.core.Nonnull;
 import griffon.plugins.preferences.NodeChangeEvent;
 import griffon.plugins.preferences.NodeChangeListener;
 import griffon.plugins.preferences.PreferenceChangeEvent;
@@ -22,7 +25,7 @@ import griffon.plugins.preferences.PreferenceChangeListener;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesNode;
 
-import javax.annotation.Nonnull;
+import javax.application.converter.ConverterRegistry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +40,18 @@ public abstract class AbstractPreferences implements Preferences {
 
     private final List<NodeChangeListener> nodeChangeListeners = new ArrayList<>();
     private final List<PreferenceChangeListener> changeListeners = new ArrayList<>();
+
+    private final ConverterRegistry converterRegistry;
+
+    protected AbstractPreferences(@Nonnull ConverterRegistry converterRegistry) {
+        this.converterRegistry = requireNonNull(converterRegistry, "Argument 'converterRegistry' must not be null");
+    }
+
+    @Override
+    @Nonnull
+    public ConverterRegistry getConverterRegistry() {
+        return converterRegistry;
+    }
 
     public void addNodeChangeListener(@Nonnull NodeChangeListener listener) {
         requireNonNull(listener, ERROR_LISTENER_NULL);

@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +18,20 @@
 package org.codehaus.griffon.runtime.preferences
 
 import com.acme.SampleModel
+import griffon.annotations.core.Nonnull
 import griffon.core.GriffonApplication
 import griffon.core.env.Metadata
 import griffon.core.injection.Module
-import griffon.core.test.GriffonUnitRule
 import griffon.plugins.preferences.PreferencesManager
 import griffon.plugins.preferences.PreferencesPersistor
 import griffon.plugins.preferences.persistors.AbstractMapBasedPreferencesPersistor
+import griffon.test.core.GriffonUnitRule
 import org.codehaus.griffon.runtime.core.injection.AbstractModule
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-import javax.annotation.Nonnull
+import javax.application.converter.ConverterRegistry
 import javax.inject.Inject
 import java.text.SimpleDateFormat
 
@@ -56,7 +59,7 @@ class TypeFormattingTest {
     private Date january2K
 
     @Before
-    public void setup() {
+    void setup() {
         january2K = new SimpleDateFormat('dd/MM/yyyy').parse('01/01/2000')
 
         ((InMemoryPreferencesPersistor) preferencesPersistor).map.putAll(
@@ -120,8 +123,10 @@ class TypeFormattingTest {
         final Map<String, Object> map = [:]
 
         @Inject
-        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
-            super(application, metadata)
+        InMemoryPreferencesPersistor(@Nonnull GriffonApplication application,
+                                     @Nonnull Metadata metadata,
+                                     @Nonnull ConverterRegistry converterRegistry) {
+            super(application, metadata, converterRegistry)
         }
 
         @Nonnull

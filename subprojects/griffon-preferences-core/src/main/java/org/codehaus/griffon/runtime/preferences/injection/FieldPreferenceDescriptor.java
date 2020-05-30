@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +17,7 @@
  */
 package org.codehaus.griffon.runtime.preferences.injection;
 
-import java.beans.PropertyEditor;
+import javax.application.converter.Converter;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -25,13 +27,13 @@ import java.util.Arrays;
 public class FieldPreferenceDescriptor extends PreferenceDescriptor {
     public final Field field;
 
-    public FieldPreferenceDescriptor(Field field, String fqName, String path, String[] args, String defaultValue, String format, Class<? extends PropertyEditor> editor) {
-        super(fqName, path, args, defaultValue, format, editor);
+    public FieldPreferenceDescriptor(Field field, String fqName, String path, String[] args, String defaultValue, String format, Class<? extends Converter<?>> converter) {
+        super(fqName, path, args, defaultValue, format, converter);
         this.field = field;
     }
 
     public InjectionPoint asInjectionPoint() {
-        return new FieldInjectionPoint(field, fqName, path, format, editor);
+        return new FieldInjectionPoint(field, fqName, path, format, converter);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class FieldPreferenceDescriptor extends PreferenceDescriptor {
         sb.append(", args=").append(Arrays.toString(args));
         sb.append(", defaultValue='").append(defaultValue).append('\'');
         sb.append(", format='").append(format).append('\'');
-        sb.append(", editor='").append(editor).append('\'');
+        sb.append(", converter='").append(converter).append('\'');
         sb.append('}');
         return sb.toString();
     }

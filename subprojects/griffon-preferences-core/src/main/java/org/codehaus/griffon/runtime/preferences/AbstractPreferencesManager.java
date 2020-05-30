@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,19 +17,16 @@
  */
 package org.codehaus.griffon.runtime.preferences;
 
-import griffon.core.ApplicationEvent;
+import griffon.annotations.core.Nonnull;
+import griffon.annotations.core.Nullable;
 import griffon.core.CallableWithArgs;
 import griffon.core.GriffonApplication;
-import griffon.core.RunnableWithArgs;
-import griffon.core.editors.ExtendedPropertyEditor;
-import griffon.core.editors.PropertyEditorResolver;
+import griffon.core.events.DestroyInstanceEvent;
+import griffon.core.events.NewInstanceEvent;
 import griffon.exceptions.GriffonException;
 import griffon.plugins.preferences.KeyResolutionStrategy;
 import griffon.plugins.preferences.NodeChangeEvent;
-import griffon.plugins.preferences.NodeChangeListener;
 import griffon.plugins.preferences.Preference;
-import griffon.plugins.preferences.PreferenceChangeEvent;
-import griffon.plugins.preferences.PreferenceChangeListener;
 import griffon.plugins.preferences.PreferencesAware;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
@@ -38,15 +37,17 @@ import org.codehaus.griffon.runtime.preferences.injection.InstanceContainer;
 import org.codehaus.griffon.runtime.preferences.injection.InstanceStore;
 import org.codehaus.griffon.runtime.preferences.injection.MethodPreferenceDescriptor;
 import org.codehaus.griffon.runtime.preferences.injection.PreferenceDescriptor;
+import org.kordamp.jsr377.converter.FormattingConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
+import javax.application.converter.Converter;
+import javax.application.converter.ConverterRegistry;
+import javax.application.converter.NoopConverter;
+import javax.application.event.EventHandler;
 import javax.inject.Inject;
 import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -56,7 +57,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static griffon.core.editors.PropertyEditorResolver.findEditor;
 import static griffon.plugins.preferences.KeyResolutionStrategy.DECLARING_CLASS;
 import static griffon.plugins.preferences.KeyResolutionStrategy.PREFERENCES_KEY_RESOLUTION_STRATEGY;
 import static griffon.util.ConfigUtils.getConfigValueAsString;
@@ -73,17 +73,22 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
     private static final String ERROR_INSTANCE_NULL = "Argument 'instance' must not be null";
     private static final String ERROR_TYPE_NULL = "Argument 'type' must not be null";
     private static final String ERROR_VALUE_NULL = "Argument 'value' must not be null";
-    private static final String ERROR_EDITOR_CLASS_NULL = "Argumnet 'editor' must not be null";
+    private static final String ERROR_EDITOR_CLASS_NULL = "Argument 'converter' must not be null";
+    protected final InstanceStore instanceStore = new InstanceStore();
+    protected final ConverterRegistry converterRegistry;
 
     @Inject
     protected GriffonApplication application;
-    protected final InstanceStore instanceStore = new InstanceStore();
-
     protected KeyResolutionStrategy keyResolutionStrategy;
+
+    @Inject
+    protected AbstractPreferencesManager(@Nonnull ConverterRegistry converterRegistry) {
+        this.converterRegistry = requireNonNull(converterRegistry, "Argument 'converterRegistry' must not be null");
+    }
 
     @PostConstruct
     private void initialize() {
-        this.application = requireNonNull(application, "Argument 'application' cannot ne null");
+        this.application = requireNonNull(application, "Argument 'application' must not be null");
 
         String resolutionStrategy = getConfigValueAsString(application.getConfiguration().asFlatMap(), PREFERENCES_KEY_RESOLUTION_STRATEGY, DECLARING_CLASS.name());
         try {
@@ -92,59 +97,51 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             keyResolutionStrategy = DECLARING_CLASS;
         }
 
-        application.getEventRouter().addEventListener(ApplicationEvent.NEW_INSTANCE.getName(), new RunnableWithArgs() {
-            @Override
-            public void run(@Nullable Object... args) {
-                Object instance = args[1];
-                injectPreferences(instance);
-            }
-        });
+        application.getEventRouter().subscribe(this);
 
-        application.getEventRouter().addEventListener(ApplicationEvent.DESTROY_INSTANCE.getName(), new RunnableWithArgs() {
-            @Override
-            public void run(@Nullable Object... args) {
-                Object instance = args[1];
-                if (instanceStore.contains(instance)) {
-                    instanceStore.remove(instance);
-                }
-            }
-        });
-
-        getPreferences().addNodeChangeListener(new NodeChangeListener() {
-            public void nodeChanged(@Nonnull NodeChangeEvent event) {
-                if (event.getType() == NodeChangeEvent.Type.ADDED) {
-                    for (InstanceContainer instanceContainer : instanceStore) {
-                        if (instanceContainer.containsPartialPath(event.getPath())) {
-                            injectPreferences(instanceContainer.instance());
-                        }
-                    }
-                }
-            }
-        });
-
-        getPreferences().addPreferencesChangeListener(new PreferenceChangeListener() {
-            public void preferenceChanged(@Nonnull PreferenceChangeEvent event) {
+        getPreferences().addNodeChangeListener(event -> {
+            if (event.getType() == NodeChangeEvent.Type.ADDED) {
                 for (InstanceContainer instanceContainer : instanceStore) {
-                    String path = event.getPath();
-                    if (PreferencesNode.PATH_SEPARATOR.equals(path)) {
-                        path = event.getKey();
-                    } else {
-                        path += "." + event.getKey();
-                    }
-                    if (instanceContainer.containsPath(path)) {
-                        InjectionPoint injectionPoint = instanceContainer.getInjectionPoints().get(path);
-                        Object value = event.getNewValue();
-
-                        if (null != value) {
-                            if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
-                                value = convertValue(injectionPoint.getType(), value, injectionPoint.format, injectionPoint.editor);
-                            }
-                        }
-                        injectionPoint.setValue(instanceContainer.instance(), value);
+                    if (instanceContainer.containsPartialPath(event.getPath())) {
+                        injectPreferences(instanceContainer.instance());
                     }
                 }
             }
         });
+
+        getPreferences().addPreferencesChangeListener(event -> {
+            for (InstanceContainer instanceContainer : instanceStore) {
+                String path = event.getPath();
+                if (PreferencesNode.PATH_SEPARATOR.equals(path)) {
+                    path = event.getKey();
+                } else {
+                    path += "." + event.getKey();
+                }
+                if (instanceContainer.containsPath(path)) {
+                    InjectionPoint injectionPoint = instanceContainer.getInjectionPoints().get(path);
+                    Object value = event.getNewValue();
+
+                    if (null != value) {
+                        if (!injectionPoint.getType().isAssignableFrom(value.getClass())) {
+                            value = convertValue(injectionPoint.getType(), value, injectionPoint.format, injectionPoint.converter);
+                        }
+                    }
+                    injectionPoint.setValue(instanceContainer.instance(), value);
+                }
+            }
+        });
+    }
+
+    @EventHandler
+    public void handleNewInstanceEvent(@Nonnull NewInstanceEvent<?> event) {
+        injectPreferences(event.getInstance());
+    }
+
+    @EventHandler
+    public void handleDestroyInstanceEvent(@Nonnull DestroyInstanceEvent<?> event) {
+        if (instanceStore.contains(event.getInstance())) {
+            instanceStore.remove(event.getInstance());
+        }
     }
 
     @Override
@@ -152,7 +149,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         requireNonNull(instance, ERROR_INSTANCE_NULL);
 
         Map<String, PreferenceDescriptor> descriptors = new LinkedHashMap<>();
-        Class klass = instance.getClass();
+        Class<?> klass = instance.getClass();
         do {
             harvestDescriptors(instance.getClass(), klass, instance, descriptors);
             klass = klass.getSuperclass();
@@ -166,7 +163,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         requireNonNull(instance, ERROR_INSTANCE_NULL);
 
         Map<String, PreferenceDescriptor> descriptors = new LinkedHashMap<>();
-        Class klass = instance.getClass();
+        Class<?> klass = instance.getClass();
         do {
             harvestDescriptors(instance.getClass(), klass, instance, descriptors);
             klass = klass.getSuperclass();
@@ -182,12 +179,14 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         }
     }
 
-    protected void harvestDescriptors(@Nonnull Class instanceClass, @Nonnull Class currentClass, @Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
+    protected void harvestDescriptors(@Nonnull Class<?> instanceClass, @Nonnull Class<?> currentClass, @Nonnull Object instance, @Nonnull Map<String, PreferenceDescriptor> descriptors) {
         PropertyDescriptor[] propertyDescriptors = GriffonClassUtils.getPropertyDescriptors(currentClass);
         for (PropertyDescriptor pd : propertyDescriptors) {
             Method readMethod = pd.getReadMethod();
             Method writeMethod = pd.getWriteMethod();
-            if (null == readMethod || null == writeMethod) { continue; }
+            if (null == readMethod || null == writeMethod) {
+                continue;
+            }
             if (isStatic(readMethod.getModifiers()) || isStatic(writeMethod.getModifiers())) {
                 continue;
             }
@@ -196,7 +195,9 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             if (null == annotation) {
                 annotation = readMethod.getAnnotation(Preference.class);
             }
-            if (null == annotation) { continue; }
+            if (null == annotation) {
+                continue;
+            }
 
             String propertyName = pd.getName();
             Class<?> resolvedClass = resolveClass(instanceClass, writeMethod.getDeclaringClass());
@@ -208,7 +209,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             defaultValue = Preference.NO_VALUE.equals(defaultValue) ? null : defaultValue;
             String resolvedPath = !isBlank(key) ? key : path;
             String format = annotation.format();
-            Class<? extends PropertyEditor> editor = annotation.editor();
+            Class<? extends Converter<?>> converter = annotation.converter();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Property " + propertyName +
@@ -219,7 +220,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                     "', format='" + format +
                     "'] is marked for preference injection.");
             }
-            descriptors.put(propertyName, new MethodPreferenceDescriptor(readMethod, writeMethod, fqName, resolvedPath, args, defaultValue, format, editor));
+            descriptors.put(propertyName, new MethodPreferenceDescriptor(readMethod, writeMethod, fqName, resolvedPath, args, defaultValue, format, converter));
         }
 
         for (Field field : currentClass.getDeclaredFields()) {
@@ -227,7 +228,9 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                 continue;
             }
             final Preference annotation = field.getAnnotation(Preference.class);
-            if (null == annotation) { continue; }
+            if (null == annotation) {
+                continue;
+            }
 
             Class<?> resolvedClass = resolveClass(instanceClass, field.getDeclaringClass());
             String fqFieldName = resolvedClass.getName().replace('$', '.') + "." + field.getName();
@@ -238,7 +241,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             defaultValue = Preference.NO_VALUE.equals(defaultValue) ? null : defaultValue;
             String resolvedPath = !isBlank(key) ? key : path;
             String format = annotation.format();
-            Class<? extends PropertyEditor> editor = annotation.editor();
+            Class<? extends Converter<?>> converter = annotation.converter();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Field " + fqFieldName +
@@ -250,7 +253,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
                     "'] is marked for preference injection.");
             }
 
-            descriptors.put(field.getName(), new FieldPreferenceDescriptor(field, fqFieldName, resolvedPath, args, defaultValue, format, editor));
+            descriptors.put(field.getName(), new FieldPreferenceDescriptor(field, fqFieldName, resolvedPath, args, defaultValue, format, converter));
         }
     }
 
@@ -271,8 +274,8 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
 
             if (value != null) {
                 InjectionPoint injectionPoint = descriptor.asInjectionPoint();
-                if (!isNoopPropertyEditor(descriptor.editor) || !injectionPoint.getType().isAssignableFrom(value.getClass())) {
-                    value = convertValue(injectionPoint.getType(), value, descriptor.format, descriptor.editor);
+                if (!isNoopConverter(descriptor.converter) || !injectionPoint.getType().isAssignableFrom(value.getClass())) {
+                    value = convertValue(injectionPoint.getType(), value, descriptor.format, descriptor.converter);
                 }
                 injectionPoint.setValue(instance, value);
             }
@@ -288,12 +291,11 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
             final String key = parsedPath[1];
 
             if (value != null) {
-                // Convert value only if descriptor.format is not null or there's a custom editor
-                if (!isNoopPropertyEditor(descriptor.editor) || !isBlank(descriptor.format)) {
-                    PropertyEditor propertyEditor = resolvePropertyEditor(value.getClass(), descriptor.format, descriptor.editor);
-                    if (!isNoopPropertyEditor(propertyEditor.getClass())) {
-                        propertyEditor.setValue(value);
-                        value = propertyEditor.getAsText();
+                // Convert value only if descriptor.format is not null or there's a custom converter
+                if (!isNoopConverter(descriptor.converter) || !isBlank(descriptor.format)) {
+                    Converter converter = resolveConverter(value.getClass(), descriptor.format, descriptor.converter);
+                    if (!isNoopConverter(converter.getClass())) {
+                        value = converter.toString(value);
                     }
                 }
                 node.putAt(key, value);
@@ -334,45 +336,45 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Formatting message={} args={}", message, Arrays.toString(args));
         }
-        if (args == null || args.length == 0) { return message; }
+        if (args == null || args.length == 0) {
+            return message;
+        }
         return MessageFormat.format(message, args);
     }
 
     @Nonnull
-    protected Object convertValue(@Nonnull Class<?> type, @Nonnull Object value, @Nullable String format, @Nonnull Class<? extends PropertyEditor> editor) {
+    protected Object convertValue(@Nonnull Class<?> type, @Nonnull Object value, @Nullable String format, @Nonnull Class<? extends Converter<?>> converter) {
         requireNonNull(type, ERROR_TYPE_NULL);
         requireNonNull(value, ERROR_VALUE_NULL);
 
-        PropertyEditor propertyEditor = resolvePropertyEditor(type, format, editor);
-        if (isNoopPropertyEditor(propertyEditor.getClass())) { return value; }
-        if (value instanceof CharSequence) {
-            propertyEditor.setAsText(String.valueOf(value));
-        } else {
-            propertyEditor.setValue(value);
+        Converter<?> resolvedConverter = resolveConverter(type, format, converter);
+        if (isNoopConverter(resolvedConverter.getClass())) {
+            return value;
         }
-        return propertyEditor.getValue();
+
+        return resolvedConverter.fromObject(value);
     }
 
     @Nonnull
-    protected PropertyEditor resolvePropertyEditor(@Nonnull Class<?> type, @Nullable String format, @Nonnull Class<? extends PropertyEditor> editor) {
+    protected Converter<?> resolveConverter(@Nonnull Class<?> type, @Nullable String format, @Nonnull Class<? extends Converter<?>> converter) {
         requireNonNull(type, ERROR_TYPE_NULL);
-        requireNonNull(editor, ERROR_EDITOR_CLASS_NULL);
+        requireNonNull(converter, ERROR_EDITOR_CLASS_NULL);
 
-        PropertyEditor propertyEditor = null;
-        if (isNoopPropertyEditor(editor)) {
-            propertyEditor = findEditor(type);
+        Converter<?> foundConverter = null;
+        if (isNoopConverter(converter)) {
+            foundConverter = converterRegistry.findConverter(type);
         } else {
             try {
-                propertyEditor = editor.newInstance();
+                foundConverter = converter.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new GriffonException("Could not instantiate editor with " + editor, e);
+                throw new GriffonException("Could not instantiate converter with " + converter, e);
             }
         }
 
-        if (propertyEditor instanceof ExtendedPropertyEditor && !isBlank(format)) {
-            ((ExtendedPropertyEditor) propertyEditor).setFormat(format);
+        if (foundConverter instanceof FormattingConverter && !isBlank(format)) {
+            ((FormattingConverter) foundConverter).setFormat(format);
         }
-        return propertyEditor;
+        return foundConverter;
     }
 
     @Nonnull
@@ -384,7 +386,7 @@ public abstract class AbstractPreferencesManager implements PreferencesManager {
         return new String[]{head, tail};
     }
 
-    protected boolean isNoopPropertyEditor(@Nonnull Class<? extends PropertyEditor> editor) {
-        return PropertyEditorResolver.NoopPropertyEditor.class.isAssignableFrom(editor);
+    protected boolean isNoopConverter(@Nonnull Class<?> converter) {
+        return NoopConverter.class.isAssignableFrom(converter);
     }
 }

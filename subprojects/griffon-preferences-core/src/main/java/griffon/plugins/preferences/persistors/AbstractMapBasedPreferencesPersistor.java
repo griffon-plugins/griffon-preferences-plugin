@@ -1,11 +1,13 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2014-2020 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +17,17 @@
  */
 package griffon.plugins.preferences.persistors;
 
+import griffon.annotations.core.Nonnull;
+import griffon.annotations.core.Nullable;
 import griffon.core.GriffonApplication;
-import griffon.core.editors.PropertyEditorResolver;
 import griffon.core.env.Metadata;
 import griffon.plugins.preferences.Preferences;
 import griffon.plugins.preferences.PreferencesManager;
 import griffon.plugins.preferences.PreferencesNode;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.application.converter.Converter;
+import javax.application.converter.ConverterRegistry;
 import javax.inject.Inject;
-import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,8 +43,10 @@ import java.util.Map;
  */
 public abstract class AbstractMapBasedPreferencesPersistor extends AbstractPreferencesPersistor {
     @Inject
-    public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application, @Nonnull Metadata metadata) {
-        super(application, metadata);
+    public AbstractMapBasedPreferencesPersistor(@Nonnull GriffonApplication application,
+                                                @Nonnull Metadata metadata,
+                                                @Nonnull ConverterRegistry converterRegistry) {
+        super(application, metadata, converterRegistry);
     }
 
     @Nonnull
@@ -145,9 +149,8 @@ public abstract class AbstractMapBasedPreferencesPersistor extends AbstractPrefe
     }
 
     @Nullable
-    protected Object defaultConvertToWritableValue(@Nonnull Object value) {
-        PropertyEditor propertyEditor = PropertyEditorResolver.findEditor(value.getClass());
-        propertyEditor.setValue(value);
-        return propertyEditor.getAsText();
+    protected <T> String defaultConvertToWritableValue(@Nonnull T value) {
+        Converter<T> converter = (Converter<T>) converterRegistry.findConverter(value.getClass());
+        return converter.toString(value);
     }
 }
