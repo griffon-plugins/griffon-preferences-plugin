@@ -30,7 +30,7 @@ You will need to configure any of the following blocks depending on your setup
 [subs="attributes"]
 ----
 dependencies {
-    compile '{project-group}:griffon-preferences-core:{project-version}'
+    api '{project-group}:griffon-preferences-core:{project-version}'
 }
 ----
 
@@ -39,7 +39,7 @@ dependencies {
 [subs="attributes"]
 ----
 dependencies {
-    compile '{project-group}:griffon-preferences-jackson:{project-version}'
+    api '{project-group}:griffon-preferences-jackson:{project-version}'
 }
 ----
 
@@ -57,7 +57,7 @@ dependencies {
 [subs="attributes"]
 ----
 dependencies {
-    compile '{project-group}:griffon-preferences-toml:{project-version}'
+    api '{project-group}:griffon-preferences-toml:{project-version}'
 }
 ----
 
@@ -66,7 +66,7 @@ dependencies {
 [subs="attributes"]
 ----
 dependencies {
-    compile '{project-group}:griffon-preferences-yaml:{project-version}'
+    api '{project-group}:griffon-preferences-yaml:{project-version}'
 }
 ----
 
@@ -142,3 +142,4 @@ Next configure dependencies as required by your particular setup
     <artifactId>griffon-preferences-yaml</artifactId>
 </dependency>
 ----
+
