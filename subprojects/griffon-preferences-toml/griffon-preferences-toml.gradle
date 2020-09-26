@@ -20,9 +20,3 @@ dependencies {
     api "com.moandjiezana.toml:toml4j:$tomlVersion"
     api project (':griffon-preferences-core')
 }
-
-jar {
-    manifest {
-        attributes('Automatic-Module-Name': project.group + '.preferences.toml')
-    }
-}

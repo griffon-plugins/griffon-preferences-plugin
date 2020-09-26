@@ -19,9 +19,3 @@ dependencies {
     api "org.json:json:$jsonVersion"
     api project(':griffon-preferences-core')
 }
-
-jar {
-    manifest {
-        attributes('Automatic-Module-Name': project.group + '.preferences.json')
-    }
-}

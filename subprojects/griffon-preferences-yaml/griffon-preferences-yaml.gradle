@@ -20,9 +20,3 @@ dependencies {
     api "org.yaml:snakeyaml:$snakeYamlVersion"
     api project (':griffon-preferences-core')
 }
-
-jar {
-    manifest {
-        attributes('Automatic-Module-Name': project.group + '.preferences.yaml')
-    }
-}

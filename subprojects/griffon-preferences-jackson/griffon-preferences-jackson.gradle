@@ -24,9 +24,3 @@ dependencies {
     testImplementation "org.msgpack:jackson-dataformat-msgpack:$msgpackVersion"
     testImplementation "org.msgpack:msgpack-core:$msgpackVersion"
 }
-
-jar {
-    manifest {
-        attributes('Automatic-Module-Name': project.group + '.preferences.jackson')
-    }
-}
