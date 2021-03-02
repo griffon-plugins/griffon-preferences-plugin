@@ -9,4 +9,4 @@ out
 .project
 .classpath
 .settings
-.lazybones
+.DS_Store

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2014-2020 The author and/or original authors.
+ * Copyright 2014-2021 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import griffon.core.injection.Module;
 import griffon.plugins.preferences.PreferencesPersistor;
 import griffon.plugins.preferences.persistors.jackson.JacksonPreferencesPersistor;
 import org.codehaus.griffon.runtime.core.injection.AbstractModule;
-import org.kordamp.jipsy.ServiceProviderFor;
+import org.kordamp.jipsy.annotations.ServiceProviderFor;
 
 import javax.inject.Named;
 

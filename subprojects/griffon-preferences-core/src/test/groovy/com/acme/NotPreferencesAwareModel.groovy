@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2014-2020 The author and/or original authors.
+ * Copyright 2014-2021 The author and/or original authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.acme
 
 import griffon.core.artifact.GriffonModel
 import griffon.plugins.preferences.Preference
-import org.kordamp.jipsy.ServiceProviderFor
+import org.kordamp.jipsy.annotations.ServiceProviderFor
 
 @ServiceProviderFor(GriffonModel)
 class NotPreferencesAwareModel implements ValueHolder {
